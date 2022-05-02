@@ -14,8 +14,11 @@ class Test(unittest.TestCase):
                     continue
                 fullpath = os.path.join(rootp, f)
                 modpath = fullpath[4:-3].replace(os.path.sep, ".")
-                print(f"trying {fullpath} via {modpath}")
-                import_module(modpath)
+                try:
+                    import_module(modpath)
+                except:
+                    print(f"While trying {fullpath} via {modpath}")
+                    raise
 
 
 if __name__ == "__main__":
