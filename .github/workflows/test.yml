@@ -1,0 +1,33 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: [3.8, 3.9, 3.10]
+    steps:
+      - name: Setup Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Fetch vanillaplusjs
+        uses: actions/checkout@v2
+      - name: Generic python setup
+        run: |
+          python -m pip install --upgrade pip
+      - name: Installing dependencies
+        run: |
+          python -m pip install -r requirements.txt
+      - name: Lint src with black
+        run: |
+          python -m black --check src
+      - name: Lint tests with black
+        run: |
+          python -m black --check tests
+      - name: Run tests
+        working-directory: ./tests
+        run: |
+          python -m unittest discover -s .
