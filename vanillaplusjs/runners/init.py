@@ -1,7 +1,7 @@
 from typing import Sequence
 import argparse
 import os
-import constants
+import vanillaplusjs.constants
 import json
 
 
@@ -43,7 +43,7 @@ def init(folder: str) -> None:
         with open(os.path.join(folder, "vanillaplusjs.json"), "w") as f:
             json.dump(
                 {
-                    "version": constants.CONFIGURATION_VERSION,
+                    "version": vanillaplusjs.constants.CONFIGURATION_VERSION,
                 },
                 f,
             )

@@ -1,10 +1,10 @@
 import argparse
 from enum import Enum
-import runners.init
-import runners.build
-import runners.run
-import runners.dev
-import runners.clean
+import vanillaplusjs.runners.init
+import vanillaplusjs.runners.build
+import vanillaplusjs.runners.run
+import vanillaplusjs.runners.dev
+import vanillaplusjs.runners.clean
 import sys
 
 
@@ -39,15 +39,15 @@ def main():
     opts = parser.parse_args(sys.argv[1:2])
     subargs = sys.argv[2:]
     if opts.command == Command.init:
-        runners.init.main(subargs)
+        vanillaplusjs.runners.init.main(subargs)
     elif opts.command == Command.build:
-        runners.build.main(subargs)
+        vanillaplusjs.runners.build.main(subargs)
     elif opts.command == Command.run:
-        runners.run.main(subargs)
+        vanillaplusjs.runners.run.main(subargs)
     elif opts.command == Command.clean:
-        runners.clean.main(subargs)
+        vanillaplusjs.runners.clean.main(subargs)
     elif opts.command == Command.dev:
-        runners.dev.main(subargs)
+        vanillaplusjs.runners.dev.main(subargs)
     else:
         raise ValueError("Invalid command")
 
