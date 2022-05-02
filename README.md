@@ -560,3 +560,32 @@ export function apiFetch(url, options) {
     return fetch(url, options);
 }
 ```
+
+## Contributing
+
+This package uses `pre-commit` to install git commit hooks. Before
+contributing, configure your virtual environment with the development
+dependencies and initialize the pre-commit hooks:
+
+```bash
+python -m venv venv
+"venv/bin/activate"
+python -m pip install -U pip
+pip install -r requirements.txt
+pre-commit install
+```
+
+For windows
+
+```bash
+python -m venv venv
+"venv/Scripts/Activate.bat"
+python -m pip install -U pip
+pip install -r requirements.txt
+```
+
+Then, in Git Bash for Windows,
+
+```bash
+"venv/Scripts/pre-commit.exe" install
+```
