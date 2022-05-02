@@ -1,2 +1,4 @@
 venv
+venv2
 __pycache__
+*.egg-info
