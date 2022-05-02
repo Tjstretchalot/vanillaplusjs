@@ -7,6 +7,7 @@ import vanillaplusjs.runners.build
 
 
 class Test(unittest.TestCase):
+    @unittest.skip("not implemented yet")
     def test_copies_html(self):
         os.makedirs(os.path.join("tmp"), exist_ok=True)
         try:

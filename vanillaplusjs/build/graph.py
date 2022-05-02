@@ -469,6 +469,8 @@ class FileDependencyGraph:
         """Adds the given file to the graph. May optionally specify the children
         of the file; if unspecified, no children is assumed.
 
+        This operation cannot produce cycles in the graph.
+
         Args:
             a (str): The file to add to the graph
             children (list[str], None): The children of the file, or none for
@@ -539,16 +541,23 @@ class FileDependencyGraph:
 
         del self.nodes[a]
 
-    def set_children(self, a: str, children: List[str]) -> None:
+    def set_children(
+        self, a: str, children: List[str], prevent_cycles: bool = True
+    ) -> None:
         """Updates the children for the given file.
 
         Args:
             a (str): The path of the node to update
             children (list[str]): The new children for the node
+            prevent_cycles (bool): If True, we will raise an error if a would have
+                a cyclic relationship with another file after this operation. Note
+                that this will cause an error even if the cycle is not new.
 
         Raises:
             ValueError: if a is not a file in the graph
             ValueError: if any of the children of a are not files in the graph
+            ValueError: if a would have a cyclic relationship with another file
+              and prevent_cycles is True
         """
         node = self.nodes.get(a)
         if node is None:
@@ -556,6 +565,21 @@ class FileDependencyGraph:
         if any(c not in self.nodes for c in children):
             bad_children = [c for c in children if c not in self.nodes]
             raise ValueError(f"{bad_children=} are not files in the graph")
+        if prevent_cycles and any(
+            self.check_nested_relationship(a, c)
+            in (FileRelationship.cyclic, FileRelationship.child)
+            for c in children
+        ):
+            bad_children = [
+                c
+                for c in children
+                if self.check_nested_relationship(a, c)
+                in (FileRelationship.cyclic, FileRelationship.child)
+            ]
+            raise ValueError(
+                f"{bad_children=} would have a cyclic relationship with the file {a=}"
+            )
+
         for child in node.children:
             child.parents.remove(node)
         node.children.clear()

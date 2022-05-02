@@ -58,12 +58,12 @@ class Test(unittest.TestCase):
         a = FileDependencyGraph()
         a.add_file("a.js", 0, 0, 0)
         a.add_file("b.js", 0, 0, 0, ["a.js"])
-        a.set_children("a.js", ["b.js"])
+        a.set_children("a.js", ["b.js"], prevent_cycles=False)
 
         b = FileDependencyGraph()
         b.add_file("a.js", 0, 0, 0)
         b.add_file("b.js", 0, 0, 0, ["a.js"])
-        b.set_children("a.js", ["b.js"])
+        b.set_children("a.js", ["b.js"], prevent_cycles=False)
 
         self.assertEqual(a, b)
 
@@ -71,7 +71,7 @@ class Test(unittest.TestCase):
         a = FileDependencyGraph()
         a.add_file("a.js", 0, 0, 0)
         a.add_file("b.js", 0, 0, 0, ["a.js"])
-        a.set_children("a.js", ["b.js"])
+        a.set_children("a.js", ["b.js"], prevent_cycles=False)
         repr(a)
         self.assertTrue(True)
 
@@ -79,12 +79,40 @@ class Test(unittest.TestCase):
         a = FileDependencyGraph()
         a.add_file("a.js", 0, 0, 0)
         a.add_file("b.js", 0, 0, 0, ["a.js"])
-        a.set_children("a.js", ["b.js"])
+        a.set_children("a.js", ["b.js"], prevent_cycles=False)
         b = FileDependencyGraph()
         b.add_file("a.js", 0, 0, 0)
         b.add_file("b.js", 1, 0, 0, ["a.js"])
-        b.set_children("a.js", ["b.js"])
+        b.set_children("a.js", ["b.js"], prevent_cycles=False)
         self.assertNotEqual(a, b)
+
+    def test_set_children_prevents_simple_cycles(self):
+        a = FileDependencyGraph()
+        a.add_file("a.js", 0, 0, 0)
+        a.add_file("b.js", 0, 0, 0, ["a.js"])
+        self.assertRaises(ValueError, a.set_children, "a.js", ["b.js"])
+
+    def test_set_children_prevents_distant_cycles(self):
+        a = FileDependencyGraph()
+        a.add_file("a.js", 0, 0, 0)
+        a.add_file("b.js", 0, 0, 0, ["a.js"])
+        a.add_file("c.js", 0, 0, 0, ["b.js"])
+        a.add_file("d.js", 0, 0, 0, ["c.js"])
+        self.assertRaises(ValueError, a.set_children, "a.js", ["d.js"])
+
+    def test_set_children_prevents_continuing_cycle(self):
+        a = FileDependencyGraph()
+        a.add_file("a.js", 0, 0, 0)
+        a.add_file("b.js", 0, 0, 0, ["a.js"])
+        a.set_children("a.js", ["b.js"], prevent_cycles=False)
+        self.assertRaises(ValueError, a.set_children, "b.js", ["a.js"])
+
+    def test_set_children_allows_breaking_cycle(self):
+        a = FileDependencyGraph()
+        a.add_file("a.js", 0, 0, 0)
+        a.add_file("b.js", 0, 0, 0, ["a.js"])
+        a.set_children("a.js", ["b.js"], prevent_cycles=False)
+        a.set_children("a.js", [])
 
     def test_save_empty(self):
         graph = FileDependencyGraph()
@@ -117,7 +145,7 @@ class Test(unittest.TestCase):
         graph = FileDependencyGraph()
         graph.add_file("a.js", 0, 0, 0)
         graph.add_file("b.js", 0, 0, 0, ["a.js"])
-        graph.set_children("a.js", ["b.js"])
+        graph.set_children("a.js", ["b.js"], prevent_cycles=False)
         try:
             with open("test.json", "w") as f:
                 graph.store(f)
@@ -178,7 +206,7 @@ class Test(unittest.TestCase):
         graph = FileDependencyGraph()
         graph.add_file("a.js", 0, 0, 0)
         graph.add_file("b.js", 0, 0, 0, ["a.js"])
-        graph.set_children("a.js", ["b.js"])
+        graph.set_children("a.js", ["b.js"], prevent_cycles=False)
         self.assertEqual(
             graph.check_direct_relationship("a.js", "b.js"), FileRelationship.cyclic
         )
@@ -198,7 +226,7 @@ class Test(unittest.TestCase):
         graph.add_file("b.js", 0, 0, 0, ["a.js"])
         graph.add_file("c.js", 0, 0, 0, ["b.js"])
         graph.add_file("d.js", 0, 0, 0, ["c.js"])
-        graph.set_children("a.js", ["d.js"])
+        graph.set_children("a.js", ["d.js"], prevent_cycles=False)
         self.assertEqual(
             graph.check_direct_relationship("a.js", "c.js"), FileRelationship.unrelated
         )
@@ -217,7 +245,7 @@ class Test(unittest.TestCase):
         graph.add_file("a.js", 0, 0, 0)
         graph.add_file("b.js", 0, 0, 0, ["a.js"])
         graph.add_file("c.js", 0, 0, 0, ["b.js"])
-        graph.set_children("b.js", ["c.js"])
+        graph.set_children("b.js", ["c.js"], prevent_cycles=False)
         self.assertEqual(
             graph.check_direct_relationship("a.js", "c.js"), FileRelationship.unrelated
         )
