@@ -23,7 +23,9 @@ class Test(unittest.TestCase):
             with open(os.path.join("tmp", "vanillaplusjs.json")) as f:
                 configuration = json.load(f)
 
-            self.assertEqual(configuration["version"], vanillaplusjs.constants.CONFIGURATION_VERSION)
+            self.assertEqual(
+                configuration["version"], vanillaplusjs.constants.CONFIGURATION_VERSION
+            )
         finally:
             shutil.rmtree("tmp")
 
