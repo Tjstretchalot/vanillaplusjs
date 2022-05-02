@@ -70,11 +70,15 @@ Or to just build it's
 vanillaplusjs build
 ```
 
-Or to just run it's
+Or to just run (not suitable at all for production) it's
 
 ```bash
 vanillaplusjs run 8888
 ```
+
+Note that `dev` will build using `vanillaplusjs build --dev` which
+may behave very slightly differently than `vanillaplusjs build`;
+in particular, see the Constants section.
 
 ## Features
 
@@ -527,3 +531,32 @@ sizes specified.
 In case you need it, such as to reference the icon in other css, the
 large primary-dark file would be at
 `/img/icons/navbar-toggler/large/primary-dark.svg`
+
+### Constants
+
+This will generate `out/www/js/modules/constants.js` which contains, in particular,
+the following constants:
+
+
+```js
+export const API_URL = '';
+```
+
+In development mode, this will be set by default to `http://127.0.0.1:8080`, whereas in
+production mode it will be left empty by default. It's recommended you use a fetch
+wrapper which prefixes the API_URL for relative urls for you; the basic idea is as
+simple as
+
+
+```js
+import { API_URL } from '/js/modules/constants.js';
+
+
+export function apiFetch(url, options) {
+    if (url.startsWith('/')) {
+        url = API_URL + url;
+    }
+
+    return fetch(url, options);
+}
+```
