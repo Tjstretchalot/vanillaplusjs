@@ -116,7 +116,7 @@ async def hot_incremental_rebuild(
 
         for file in dirtied_outputs:
             logger.debug("Cleaning {}", file)
-            os.unlink(os.path.join(context.out_folder, file))
+            os.unlink(os.path.join(context.folder, file))
 
         updated_results: Dict[str, BuildFileResult] = dict()
         pending_results: Dict[str, asyncio.Future] = dict()

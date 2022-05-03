@@ -122,6 +122,9 @@ def build(folder: str, dev: bool) -> None:
         )
         pending = asyncio.all_tasks(loop)
 
+    asyncio.set_event_loop(None)
+    loop.close()
+
 
 def detect_symlink_support() -> bool:
     try:
