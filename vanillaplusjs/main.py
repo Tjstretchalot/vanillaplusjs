@@ -6,6 +6,7 @@ import vanillaplusjs.runners.run
 import vanillaplusjs.runners.dev
 import vanillaplusjs.runners.clean
 import sys
+from loguru import logger
 
 
 class Command(Enum):
@@ -31,6 +32,7 @@ class Command(Enum):
 
 
 def main():
+    logger.debug("starting with args: {}", sys.argv[1:])
     parser = argparse.ArgumentParser(
         description="A web-frontend near-vanilla framework. Try [COMMAND] -h for more info."
     )
