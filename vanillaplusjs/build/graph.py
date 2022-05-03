@@ -3,7 +3,6 @@ from typing import Dict, List, Literal, Optional, Set, Tuple
 import io
 import json
 from dataclasses import dataclass
-from enum import Enum
 
 
 class FileRelationship:

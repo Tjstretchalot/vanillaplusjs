@@ -1,5 +1,4 @@
-from msilib.schema import File
-from typing import List, Set, Sequence
+from typing import Sequence
 import argparse
 from loguru import logger
 import os

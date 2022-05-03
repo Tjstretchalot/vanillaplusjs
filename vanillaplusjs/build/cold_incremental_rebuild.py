@@ -4,7 +4,7 @@ from .file_signature import FileSignature, get_file_signature
 from .hot_incremental_rebuild import hot_incremental_rebuild
 from loguru import logger
 import os
-from typing import Dict, List, Set
+from typing import Dict, Set
 
 
 async def cold_incremental_rebuild(

@@ -1,5 +1,4 @@
-import re
-from typing import Dict, Iterable, List, Set
+from typing import Dict, List, Set
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file import BuildFileResult, build_file
 from vanillaplusjs.build.exceptions import CyclicDependencyException
