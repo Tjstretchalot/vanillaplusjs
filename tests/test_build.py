@@ -40,13 +40,13 @@ class Test(unittest.TestCase):
             # move the mstat to a time far enough in the past that we won't race
             a_bit_ago = time.time() - 100
             os.utime(expected_path, (a_bit_ago, a_bit_ago))
-            old_stat = os.stat(expected_path)
+            old_stat = os.lstat(expected_path)
             old_mtime = old_stat.st_mtime
             self.assertAlmostEqual(a_bit_ago, old_mtime, delta=3)  # rounding errors
 
             vanillaplusjs.runners.build.main(["--folder", "tmp"])
 
-            new_stat = os.stat(expected_path)
+            new_stat = os.lstat(expected_path)
             new_mtime = new_stat.st_mtime
             self.assertEqual(old_mtime, new_mtime)
         finally:

@@ -31,7 +31,8 @@ def get_file_signature(file: str) -> FileSignature:
     Returns:
         FileSignature: The file signature
     """
-    stats = os.stat(file)
+    stats = os.lstat(file)
+
     try:
         inode = stats.st_ino
     except AttributeError:
