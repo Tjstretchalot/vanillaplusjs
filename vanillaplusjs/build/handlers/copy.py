@@ -45,8 +45,8 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
 
     if context.symlinks:
         os.symlink(
-            src_path_rel_to_cwd,
-            os.path.abspath(target_path_rel_to_cwd),
+            os.path.abspath(src_path_rel_to_cwd),
+            target_path_rel_to_cwd,
         )
     else:
         shutil.copyfile(
