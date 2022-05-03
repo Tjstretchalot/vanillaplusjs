@@ -136,6 +136,6 @@ def detect_symlink_support() -> bool:
         logger.debug("Symlinks disabled (unsupported)")
         return False
     finally:
-        os.remove("___symlink_test___.txt")
         if os.path.exists("___symlink_test___2.txt"):
             os.remove("___symlink_test___2.txt")
+        os.remove("___symlink_test___.txt")
