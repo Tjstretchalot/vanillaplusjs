@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
             expected_path = os.path.join("tmp", "out", "www", "index.html")
             # move the mstat to a time far enough in the past that we won't race
             a_bit_ago = time.time() - 100
-            os.utime(expected_path, (a_bit_ago, a_bit_ago))
+            os.utime(expected_path, (a_bit_ago, a_bit_ago), follow_symlinks=False)
             old_stat = os.lstat(expected_path)
             old_mtime = old_stat.st_mtime
             self.assertAlmostEqual(a_bit_ago, old_mtime, delta=3)  # rounding errors

@@ -35,22 +35,23 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
     if target_path is None:
         return BuildFileResult(children=[], produced=[], reused=[])
 
-    if os.path.exists(os.path.join(context.folder, target_path)):
+    src_path_rel_to_cwd = os.path.join(context.folder, relpath)
+    target_path_rel_to_cwd = os.path.join(context.folder, target_path)
+
+    if os.path.exists(target_path_rel_to_cwd):
         return BuildFileResult(children=[], produced=[], reused=[target_path])
 
-    os.makedirs(
-        os.path.dirname(os.path.join(context.folder, target_path)), exist_ok=True
-    )
+    os.makedirs(os.path.dirname(target_path_rel_to_cwd), exist_ok=True)
 
     if context.symlinks:
         os.symlink(
-            os.path.join(context.folder, relpath),
-            os.path.join(context.folder, target_path),
+            src_path_rel_to_cwd,
+            os.path.relpath(target_path_rel_to_cwd, src_path_rel_to_cwd),
         )
     else:
         shutil.copyfile(
-            os.path.join(context.folder, relpath),
-            os.path.join(context.folder, target_path),
+            src_path_rel_to_cwd,
+            target_path_rel_to_cwd,
         )
 
     return BuildFileResult(children=[], produced=[target_path], reused=[])
