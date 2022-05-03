@@ -7,16 +7,13 @@ import vanillaplusjs.runners.build
 
 
 class Test(unittest.TestCase):
-    @unittest.skip("not implemented yet")
     def test_copies_html(self):
         os.makedirs(os.path.join("tmp"), exist_ok=True)
         try:
             vanillaplusjs.runners.init.main(["--folder", "tmp"])
             with open(os.path.join("tmp", "src", "public", "index.html"), "w") as f:
                 print("<html></html>", file=f)
-            vanillaplusjs.runners.build.main(
-                ["--infolder", "tmp", "--outfolder", "tmp/out"]
-            )
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
             self.assertTrue(
                 os.path.exists(os.path.join("tmp", "out", "www", "index.html"))
             )
