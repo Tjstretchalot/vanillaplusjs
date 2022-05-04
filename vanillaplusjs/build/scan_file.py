@@ -20,6 +20,7 @@ class ScanFileResult:
 
 
 import vanillaplusjs.build.handlers.copy_and_hash
+import vanillaplusjs.build.handlers.html
 
 
 def scan_file(context: BuildContext, relpath: str) -> ScanFileResult:
@@ -39,4 +40,6 @@ def scan_file(context: BuildContext, relpath: str) -> ScanFileResult:
     Returns:
         ScanFileResult: What the file depends on and what it will produce
     """
+    if relpath.endswith(".html"):
+        return vanillaplusjs.build.handlers.html.scan_file(context, relpath)
     return vanillaplusjs.build.handlers.copy_and_hash.scan_file(context, relpath)

@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence
 import argparse
 import os
 import vanillaplusjs.constants
@@ -15,12 +15,21 @@ def main(args: Sequence[str]) -> None:
         default=".",
         help="The folder to initialize",
     )
+    argparser.add_argument(
+        "--host",
+        type=str,
+        required=False,
+        help=(
+            "The host address where the website will be accessed, "
+            "for e.g., updating canonical links"
+        ),
+    )
     args = argparser.parse_args(args)
 
-    init(args.folder)
+    init(args.folder, host=args.host)
 
 
-def init(folder: str) -> None:
+def init(folder: str, host: Optional[str] = None) -> None:
     """Initializes the given folder with vanillaplusjs. If the configuration
     file does not exist it is initializes, and if the folder structure does not
     exist it is initializes.
@@ -38,12 +47,15 @@ def init(folder: str) -> None:
 
     Args:
         folder (str): The root folder to initialize
+        host (str, None): If the host where the website will be hosted
+            is known, that host to initialize the configuration with
     """
     if not os.path.exists(os.path.join(folder, "vanillaplusjs.json")):
         with open(os.path.join(folder, "vanillaplusjs.json"), "w") as f:
             json.dump(
                 {
                     "version": vanillaplusjs.constants.CONFIGURATION_VERSION,
+                    "host": host,
                 },
                 f,
             )

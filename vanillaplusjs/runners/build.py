@@ -77,6 +77,7 @@ def build(folder: str, dev: bool) -> None:
         print("vanillaplusjs.json is out of date; please run vanillaplusjs init again")
         sys.exit(1)
 
+    context.host = config["host"]
     if not os.path.exists(context.src_folder):
         print("No src folder found")
         sys.exit(1)

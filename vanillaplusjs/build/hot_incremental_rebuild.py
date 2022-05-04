@@ -1,7 +1,10 @@
 from typing import Dict, List, Set
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file import BuildFileResult, build_file
-from vanillaplusjs.build.exceptions import CyclicDependencyException
+from vanillaplusjs.build.exceptions import (
+    CyclicDependencyException,
+    MissingConfigurationException,
+)
 from vanillaplusjs.build.file_signature import FileSignature, get_file_signature
 from vanillaplusjs.build.scan_file import ScanFileResult, scan_file
 from .graph import FileDependencyGraph

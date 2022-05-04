@@ -24,6 +24,7 @@ class BuildFileResult:
 
 
 import vanillaplusjs.build.handlers.copy_and_hash
+import vanillaplusjs.build.handlers.html
 
 
 def build_file(build_context: BuildContext, relpath: str) -> BuildFileResult:
@@ -44,4 +45,6 @@ def build_file(build_context: BuildContext, relpath: str) -> BuildFileResult:
     Returns:
         BuildFileResult: If the file is built successfully
     """
+    if relpath.endswith(".html"):
+        return vanillaplusjs.build.handlers.html.build_file(build_context, relpath)
     return vanillaplusjs.build.handlers.copy_and_hash.build_file(build_context, relpath)

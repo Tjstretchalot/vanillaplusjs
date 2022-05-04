@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+from typing import Optional
 
 
 @dataclass
@@ -16,6 +17,9 @@ class BuildContext:
 
     symlinks: bool
     """True if symlinks should be used when building, false otherwise"""
+
+    host: Optional[str] = None
+    """The host where the website will be deployed, e.g., example.com, if known."""
 
     @property
     def src_folder(self) -> str:
