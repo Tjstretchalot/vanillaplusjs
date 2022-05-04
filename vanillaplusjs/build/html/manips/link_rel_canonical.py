@@ -52,7 +52,7 @@ class LinkRelCanonicalManipulator(HTMLManipulator):
             return False
 
         href = attributes.get((None, "href"))
-        if href is not None and not href.startswith("/"):
+        if href is not None and href != "" and not href.startswith("/"):
             return False
 
         if self.mode == "scan":

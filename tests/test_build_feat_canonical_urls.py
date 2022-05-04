@@ -67,6 +67,28 @@ class Test(unittest.TestCase):
         finally:
             shutil.rmtree("tmp")
 
+    def test_root_canonical_with_init(self):
+        """For absolute wackos who want the root url not to have a trailing slash."""
+        os.makedirs(os.path.join("tmp"), exist_ok=True)
+        try:
+            vanillaplusjs.runners.init.main(
+                ["--folder", "tmp", "--host", "example.com"]
+            )
+            with open(os.path.join("tmp", "src", "public", "index.html"), "w") as f:
+                f.write(
+                    '<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="canonical" href=""></head><body></body></html>'
+                )
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
+            with open(os.path.join("tmp", "out", "www", "index.html"), "r") as f:
+                self.assertEqual(
+                    f.read(),
+                    "<!DOCTYPE html><html>"
+                    '<head><meta charset="utf-8"><link href="https://example.com" rel="canonical"></head>'
+                    "<body></body></html>\n",
+                )
+        finally:
+            shutil.rmtree("tmp")
+
 
 if __name__ == "__main__":
     unittest.main()
