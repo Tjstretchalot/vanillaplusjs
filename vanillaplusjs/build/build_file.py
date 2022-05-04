@@ -23,7 +23,7 @@ class BuildFileResult:
     """
 
 
-import vanillaplusjs.build.handlers.copy
+import vanillaplusjs.build.handlers.copy_and_hash
 
 
 def build_file(build_context: BuildContext, relpath: str) -> BuildFileResult:
@@ -44,4 +44,4 @@ def build_file(build_context: BuildContext, relpath: str) -> BuildFileResult:
     Returns:
         BuildFileResult: If the file is built successfully
     """
-    return vanillaplusjs.build.handlers.copy.build_file(build_context, relpath)
+    return vanillaplusjs.build.handlers.copy_and_hash.build_file(build_context, relpath)

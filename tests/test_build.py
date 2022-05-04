@@ -83,6 +83,24 @@ class Test(unittest.TestCase):
         finally:
             shutil.rmtree("tmp")
 
+    def test_hashes_html(self):
+        contents = "<html></html>"
+        hash = "tjOlh8ZS0COGxPFvjG9qq3NS2X8WNnw8QFdiFDct1ig="
+        infile = os.path.join("tmp", "src", "public", "index.html")
+        outfile_hash = os.path.join("tmp", "out", "www", "index.html.hash")
+
+        os.makedirs(os.path.join("tmp"), exist_ok=True)
+        try:
+            vanillaplusjs.runners.init.main(["--folder", "tmp"])
+            with open(infile, "w") as f:
+                print(contents, file=f, end="")
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
+
+            with open(outfile_hash, "r") as f:
+                self.assertEqual(f.read(), hash)
+        finally:
+            shutil.rmtree("tmp")
+
 
 if __name__ == "__main__":
     unittest.main()
