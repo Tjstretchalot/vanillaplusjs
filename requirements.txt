@@ -10,6 +10,7 @@ commonmark==0.9.1
 distlib==0.3.4
 docutils==0.18.1
 filelock==3.6.0
+html5lib==1.1
 identify==2.5.0
 idna==3.3
 importlib-metadata==4.11.3
