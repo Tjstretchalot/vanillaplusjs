@@ -1,15 +1,15 @@
 from typing import List, Optional
-from .manipulator import HTMLManipulator
-from .token import HTMLToken
+from .manipulator import CSSManipulator
+from .token import CSSToken
 
 
-class HTMLBuilder:
+class CSSBuilder:
     """Produces a sequence of tokens from a list of tokens and a list of
     manipulators.
     """
 
-    def __init__(self, manipulators: List[HTMLManipulator]):
-        self.output: List[HTMLToken] = []
+    def __init__(self, manipulators: List[CSSManipulator]):
+        self.output: List[CSSToken] = []
         """The unconsumed output tokens, i.e., tokens which we have already
         produced but haven't yet been requested via consume_tokens
         """
@@ -18,12 +18,12 @@ class HTMLBuilder:
         """The manipulators for the current tokens.
         """
 
-        self.mark: Optional[HTMLManipulator] = None
+        self.mark: Optional[CSSManipulator] = None
         """If an HTMLManipulator is currently marked, consuming tokens, then
         the HTMLManipulator which is currently marked.
         """
 
-    def consume_tokens(self) -> List[HTMLToken]:
+    def consume_tokens(self) -> List[CSSToken]:
         """Returns any unconsumed output tokens and consumes them. This can be
         used to reduce the memory usage of this file for long streams, though
         in the simplest case you can just stream all the tokens to this builder
@@ -34,7 +34,7 @@ class HTMLBuilder:
         self.output = []
         return output
 
-    def handle_token(self, token: HTMLToken) -> None:
+    def handle_token(self, token: CSSToken) -> None:
         """Handles the next token in the stream. It is possible that output
         tokens that result from this token are delayed, i.e., are not determined
         until a later call.

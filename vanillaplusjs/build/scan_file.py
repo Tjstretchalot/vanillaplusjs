@@ -21,6 +21,7 @@ class ScanFileResult:
 
 import vanillaplusjs.build.handlers.copy_and_hash
 import vanillaplusjs.build.handlers.html
+import vanillaplusjs.build.handlers.css
 
 
 def scan_file(context: BuildContext, relpath: str) -> ScanFileResult:
@@ -42,4 +43,6 @@ def scan_file(context: BuildContext, relpath: str) -> ScanFileResult:
     """
     if relpath.endswith(".html"):
         return vanillaplusjs.build.handlers.html.scan_file(context, relpath)
+    elif relpath.endswith(".css"):
+        return vanillaplusjs.build.handlers.css.scan_file(context, relpath)
     return vanillaplusjs.build.handlers.copy_and_hash.scan_file(context, relpath)

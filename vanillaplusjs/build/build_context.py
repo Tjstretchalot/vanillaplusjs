@@ -21,6 +21,9 @@ class BuildContext:
     host: Optional[str] = None
     """The host where the website will be deployed, e.g., example.com, if known."""
 
+    default_css_file: str = "src/public/css/main.css"
+    """The default css file for imports if not specified"""
+
     @property
     def src_folder(self) -> str:
         """Returns the src folder where the input files are located"""
