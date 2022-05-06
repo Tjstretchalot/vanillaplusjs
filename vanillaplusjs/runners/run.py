@@ -6,6 +6,7 @@ from loguru import logger
 import signal
 import threading
 import time
+import sys
 
 
 def main(args: Sequence[str]):
@@ -32,13 +33,13 @@ def run_server(host: str, port: int, folder: str) -> None:
         logger.warning(
             'vanillaplusjs.json not found. Call "vanillaplusjs init" to create it.'
         )
-        return
+        sys.exit(1)
 
     if not os.path.exists(os.path.join(folder, "out", "www", "index.html")):
         logger.warning(
             'out/www/index.html not found. Call "vanillaplusjs build" to create it.'
         )
-        return
+        sys.exit(1)
 
     abs_cwd = os.path.abspath(os.getcwd())
     os.chdir(os.path.join(folder, "out", "www"))
