@@ -63,3 +63,16 @@ def init(folder: str, host: Optional[str] = None) -> None:
     os.makedirs(os.path.join(folder, "src", "public", "img"), exist_ok=True)
     os.makedirs(os.path.join(folder, "src", "public", "js"), exist_ok=True)
     os.makedirs(os.path.join(folder, "src", "public", "partials"), exist_ok=True)
+
+    if not os.path.exists(os.path.join(folder, "src", "public", "index.html")):
+        with open(os.path.join(folder, "src", "public", "index.html"), "w") as f:
+            print("<!DOCTYPE html>", file=f)
+            print('<html lang="en">', file=f)
+            print("<head>", file=f)
+            print("  <title>VanillaPlusJS</title>", file=f)
+            print('  <meta charset="utf-8">', file=f)
+            print("</head>", file=f)
+            print("<body>", file=f)
+            print("  <h1>VanillaPlusJS</h1>", file=f)
+            print("</body>", file=f)
+            print("</html>", file=f)

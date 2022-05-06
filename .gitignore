@@ -3,3 +3,4 @@ venv2
 __pycache__
 *.egg-info
 dist
+/example
