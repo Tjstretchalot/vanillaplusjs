@@ -61,7 +61,7 @@ vanillaplusjs init
 Then to build and run, automatically watching for changes, it's
 
 ```bash
-vanillaplusjs dev 8888 --watch
+vanillaplusjs dev --port 8888 --watch
 ```
 
 Or to just build it's
@@ -73,7 +73,7 @@ vanillaplusjs build
 Or to just run (not suitable at all for production) it's
 
 ```bash
-vanillaplusjs run 8888
+vanillaplusjs run --port 8888
 ```
 
 Note that `dev` will build using `vanillaplusjs build --dev` which
