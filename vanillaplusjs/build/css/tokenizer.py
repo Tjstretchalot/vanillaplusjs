@@ -151,6 +151,9 @@ class PreprocessedTextIO:
         if res is None or n < 1 or len(res) == n:
             return res
 
+        if len(res) == 0:
+            return None
+
         while len(res) < n:
             additional = self._read(n - len(res))
             if additional is None:
@@ -168,6 +171,9 @@ class PreprocessedTextIO:
         res = self._peek(n)
         if res is None or n < 1 or len(res) == n:
             return res
+
+        if len(res) == 0:
+            return None
 
         attempted_peek_length = n
         while True:
