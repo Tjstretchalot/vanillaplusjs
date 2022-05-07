@@ -9,11 +9,8 @@ from vanillaplusjs.build.build_file import BuildFileResult
 from vanillaplusjs.build.html.manips.link_rel_canonical import (
     LinkRelCanonicalManipulator,
 )
-from vanillaplusjs.build.html.manips.link_rel_stylesheet_hash import (
-    LinkRelStylesheetHash,
-)
-from vanillaplusjs.build.html.manips.link_rel_preload_hash import (
-    LinkRelPreloadHash,
+from vanillaplusjs.build.html.manips.link_hash import (
+    LinkHash,
 )
 import vanillaplusjs.build.handlers.copy
 import vanillaplusjs.build.handlers.hash
@@ -24,8 +21,7 @@ import os
 
 MANIPULATORS = [
     LinkRelCanonicalManipulator,
-    LinkRelStylesheetHash,
-    LinkRelPreloadHash,
+    LinkHash,
 ]
 """The manipulators to apply to the document. Each manipulator is a subclass
 of HTMLManipulator whose init function accepts

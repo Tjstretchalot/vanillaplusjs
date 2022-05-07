@@ -8,22 +8,77 @@ import os
 from vanillaplusjs.constants import PROCESSOR_VERSION
 from dataclasses import dataclass
 import itertools
+import abc
 
 
 PUBLIC_PREFIX_LENGTH = len(os.path.join("src", "public")) + len(os.path.sep)
 
 
 @dataclass
-class PreloadDependency:
+class LinkDependency:
+    """Used to describe a link dependency that we are going to
+    append the cache-busting query parameters to
+    """
+
+    name: str
+    """The name of the tag"""
+
+    attr_name: str
+    """The name of the attribute that refers to the file to link to."""
+
     path: str
+    """The path that we originally wanted to link to."""
+
     attributes: Dict[str, str]
+    """The other attributes besides `name`"""
 
 
-class LinkRelPreloadHash(HTMLManipulator):
-    """Updates preload links which reference domain-relative links (i.e., like
-    /css/main.css) to append the hash of the file and the current processor version
+class LinkLike(abc.ABC):
+    """Base class for describing something that we should append cache-busting
+    query parameters to.
+    """
 
-    For example,
+    def __init__(
+        self, tag_style: Literal["EmptyTag", "StartTag"], name: str, attr_name: str
+    ) -> None:
+        self.tag_style = tag_style
+        self.name = name
+        self.attr_name = attr_name
+
+    @abc.abstractmethod
+    def matches(self, node: tkn.HTMLToken) -> bool:
+        """Returns True if the given node is a link of the type we are looking for.
+        This can ignore the name and attribute name.
+        """
+        raise NotImplementedError()
+
+
+class LinkBasic(LinkLike):
+    def matches(self, node: tkn.HTMLToken) -> bool:
+        return True
+
+
+class LinkRel(LinkLike):
+    def __init__(self) -> None:
+        super().__init__("EmptyTag", "link", "href")
+
+    def matches(self, node: tkn.HTMLToken) -> bool:
+        return node["data"].get((None, "rel")) in ("stylesheet", "preload")
+
+
+LINK_TYPES = (
+    LinkRel(),
+    LinkBasic("StartTag", "script", "src"),
+)
+
+
+class LinkHash(HTMLManipulator):
+    """Updates a variety of whats of referencing other files such that they
+    reference the same file with query parameters which include the version of
+    the file they reference. This allows the server to offer strong cache-control
+    headers, while still ensuring that clients will always get the latest version
+
+    Examples:
 
     ```
     <link as="font" href="/assets/fonts/test.ttf" rel="preload" type="font/ttf">
@@ -34,6 +89,21 @@ class LinkRelPreloadHash(HTMLManipulator):
     ```
     <link as="font" href="/assets/fonts/test.ttf?v=HASH&pv=PROCESSOR_VERSION" rel="preload" type="font/ttf">
     ```
+
+    and
+
+    ```
+    <link rel="stylesheet" href="/css/main.css">
+    ```
+
+    would become
+
+    ```
+    <link rel="stylesheet" href="/css/main.css?v=HASH&pv=PROCESSOR_VERSION>
+    ```
+
+    For convenience when testing, this will always alphabetically organize
+    the attributes.
     """
 
     def __init__(
@@ -75,47 +145,53 @@ class LinkRelPreloadHash(HTMLManipulator):
         with open(expected_hash_loc, "r") as f:
             hash = f.read().strip()
 
-        new_attribute_keys = sorted(itertools.chain(dep.attributes.keys(), ("href",)))
+        new_attribute_keys = sorted(
+            itertools.chain(dep.attributes.keys(), (dep.attr_name,))
+        )
         new_href = f"/{dep.path}?v={hash}&pv={PROCESSOR_VERSION}"
+
+        new_data = dict(
+            ((None, key), dep.attributes[key])
+            if key != dep.attr_name
+            else ((None, key), new_href)
+            for key in new_attribute_keys
+        )
 
         return [
             tkn.HTMLToken(
-                type="EmptyTag",
-                name="link",
-                data=dict(
-                    ((None, key), dep.attributes[key])
-                    if key != "href"
-                    else ((None, key), new_href)
-                    for key in new_attribute_keys
-                ),
+                type=node["type"],
+                name=dep.name,
+                data=new_data,
             )
         ]
 
-    def _get_as_dependency(self, node: tkn.HTMLToken) -> Optional[PreloadDependency]:
+    def _get_as_dependency(self, node: tkn.HTMLToken) -> Optional[LinkDependency]:
         """If the given node is a proper link to a stylesheet that we should update,
         returns the path to the stylesheet relative to the public directory.
 
         Otherwise, returns None.
         """
-        if node["type"] != "EmptyTag":
-            return None
+        for link_type in LINK_TYPES:
+            if node["type"] != link_type.tag_style:
+                continue
 
-        if node["name"] != "link":
+            if node["name"] != link_type.name:
+                continue
+
+            if not link_type.matches(node):
+                continue
+            break
+        else:
             return None
 
         attributes = node["data"]
-        if (None, "rel") not in attributes:
-            return None
-
-        rel = attributes[(None, "rel")]
-        if rel != "preload":
-            return None
-
-        href = attributes.get((None, "href"))
+        href = attributes.get((None, link_type.attr_name))
         if href is None or not href.startswith("/") or any(c in "?#" for c in href):
             return None
 
-        return PreloadDependency(
+        return LinkDependency(
+            name=node["name"],
+            attr_name=link_type.attr_name,
             path=href[1:],
             attributes=dict(
                 ((key[1], val) for (key, val) in attributes.items() if key[1] != "href")
