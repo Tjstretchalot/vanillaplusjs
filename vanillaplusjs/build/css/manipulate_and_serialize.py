@@ -28,7 +28,7 @@ def manipulate_and_serialize(
         os.makedirs(out_dir, exist_ok=True)
 
     with open(infile, "r") as f_in:
-        with open(outfile, "w") as f_out:
+        with open(outfile, "w", newline="\n") as f_out:
             for in_token in tokenize(f_in):
                 builder.handle_token(in_token)
                 for out_token in builder.consume_tokens():
