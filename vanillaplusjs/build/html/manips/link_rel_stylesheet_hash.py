@@ -5,19 +5,10 @@ from vanillaplusjs.build.html.manipulator import HTMLManipulator
 import vanillaplusjs.build.html.token as tkn
 from vanillaplusjs.build.build_context import BuildContext
 import os
+from vanillaplusjs.constants import PROCESSOR_VERSION
 
 
 PUBLIC_PREFIX_LENGTH = len(os.path.join("src", "public")) + len(os.path.sep)
-PROCESSOR_VERSION = "1"
-
-
-with open(
-    os.path.abspath(os.path.join(__file__, "../../../../../setup.cfg")), "r"
-) as f:
-    for line in f:
-        line: str
-        if line.startswith("version = "):
-            PROCESSOR_VERSION = line.split("=")[1].strip()
 
 
 class LinkRelStylesheetHash(HTMLManipulator):

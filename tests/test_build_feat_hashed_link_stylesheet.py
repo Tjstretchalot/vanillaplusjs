@@ -5,7 +5,7 @@ import os
 import shutil
 import vanillaplusjs.runners.init
 import vanillaplusjs.runners.build
-from vanillaplusjs.build.html.manips.link_rel_stylesheet_hash import PROCESSOR_VERSION
+from vanillaplusjs.constants import PROCESSOR_VERSION
 
 
 # We define these here to avoid breaking the indent flow too much while
