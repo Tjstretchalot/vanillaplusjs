@@ -18,8 +18,14 @@ def manipulate_and_serialize(
 
     with open(infile, "r") as f:
         tb = html5lib.treebuilders.getTreeBuilder("dom")
-        parser = html5lib.HTMLParser(tb, strict=True, namespaceHTMLElements=False)
-        doc = parser.parse(f, scripting=False)
+        parser = html5lib.HTMLParser(tb, strict=False, namespaceHTMLElements=False)
+        try:
+            doc = parser.parse(f, scripting=False)
+        except html5lib.html5parser.ParseError:
+            raise ValueError(
+                f"{infile} is not a valid HTML file; errors={parser.errors}"
+            )
+
         walker = html5lib.getTreeWalker("dom")
         for token in walker(doc):
             builder.handle_token(token)
