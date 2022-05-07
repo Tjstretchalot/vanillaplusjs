@@ -109,21 +109,22 @@ def build(folder: str, dev: bool) -> None:
         logger.debug("Loaded old outputs graph")
 
     loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(
-        cold_incremental_rebuild(context, old_dependency_graph, old_output_graph)
-    )
-
-    # Wait for the `ensure_future`s to finish cleanly
-    pending = asyncio.all_tasks(loop)
-    while pending:
+    try:
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(
-            asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
+            cold_incremental_rebuild(context, old_dependency_graph, old_output_graph)
         )
-        pending = asyncio.all_tasks(loop)
 
-    asyncio.set_event_loop(None)
-    loop.close()
+        # Wait for the `ensure_future`s to finish cleanly
+        pending = asyncio.all_tasks(loop)
+        while pending:
+            loop.run_until_complete(
+                asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
+            )
+            pending = asyncio.all_tasks(loop)
+    finally:
+        asyncio.set_event_loop(None)
+        loop.close()
 
 
 def detect_symlink_support() -> bool:

@@ -143,8 +143,6 @@ class DevEventHandler(FileSystemEventHandler):
         self.folder = folder
         """Project root folder, an absolute path"""
 
-        print(f"project root: {self.folder}")
-
         self.debounce_seconds = debounce_seconds
         """Minimum time before a rebuild in seconds"""
 
