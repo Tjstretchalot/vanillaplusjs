@@ -1,5 +1,4 @@
-"""Describes the interface that must be implemented for a component which
-manipulates the dom.
+"""Describes a single token within the html document.
 """
 from typing import Dict, Optional, Tuple, Type, TypedDict, Union
 
