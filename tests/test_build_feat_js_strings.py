@@ -11,12 +11,16 @@ import vanillaplusjs.runners.build
 # using the """ syntax.
 BASIC = {
     "orig": {
-        "src/public/js/example.js": "// this is a test",
-        "src/public/js/example2.js": "  // this is a test ",
+        "src/public/js/example.js": "'foobar'",
+        "src/public/js/example2.js": '"foobar"',
+        "src/public/js/example3.js": '"foo\'bar"',
+        "src/public/js/example4.js": '"foo\\"bar"',
     },
     "conv": {
-        "out/www/js/example.js": "/* this is a test*/",
-        "out/www/js/example2.js": "  /* this is a test */",
+        "out/www/js/example.js": '"foobar"',
+        "out/www/js/example2.js": '"foobar"',
+        "out/www/js/example3.js": '"foo\'bar"',
+        "out/www/js/example4.js": "'foo\"bar'",
     },
 }
 

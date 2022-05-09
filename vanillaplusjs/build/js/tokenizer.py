@@ -84,7 +84,8 @@ def tokenize(fp: TextIOBase) -> Generator[JSToken, None, None]:
             yield _consume_string_literal(peekable)
             continue
 
-        yield JSToken(type=JSTokenType.invalid, value=peekable.read(1))
+        while rem := peekable.read(16 * 1024):
+            yield JSToken(type=JSTokenType.invalid, value=rem)
 
     yield JSToken(type=JSTokenType.eof, value=None)
 
@@ -159,12 +160,8 @@ RESERVED_IDENTIFIERS = {
 
 def _consume_identifier(peekable: PeekableTextIO) -> Optional[JSToken]:
     """Consumes an identifier from the given peekable, if one is present."""
-    peeked = peekable.peek(1)
-    if not peeked:
-        return None
-
     res = ""
-    while True:
+    while peeked := peekable.peek(1):
         if peeked == "\\" and _is_unicode_escape_sequence(peekable.peek(10)[1:]):
             peekable.read(1)
             res += _consume_unicode_escape_sequence(peekable)

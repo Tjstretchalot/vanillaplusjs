@@ -6,8 +6,8 @@ hashes that output as if via hash.
 from typing import List
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file import BuildFileResult
-from vanillaplusjs.build.js.manips.test import (
-    TestManipulator,
+from vanillaplusjs.build.js.manips.hash_imports import (
+    HashImportsManipulator,
 )
 import vanillaplusjs.build.handlers.copy
 import vanillaplusjs.build.handlers.hash
@@ -17,7 +17,7 @@ import os
 
 
 MANIPULATORS = [
-    TestManipulator,
+    HashImportsManipulator,
 ]
 """The manipulators to apply to the document. Each manipulator is a subclass
 of JSManipulator whose init function accepts
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         "test.js",
         "test.out.js",
         [
-            TestManipulator(
+            HashImportsManipulator(
                 BuildContext(folder=".", dev=False, symlinks=False),
                 "test.js",
                 "build",

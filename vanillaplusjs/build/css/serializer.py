@@ -15,11 +15,7 @@ def serialize(token: CSSToken) -> str:
     if token["type"] == CSSTokenType.whitespace:
         return token["value"]
     elif token["type"] == CSSTokenType.string:
-        if '"' not in token["value"]:
-            return _serialize_string(token["value"], '"')
-        elif "'" not in token["value"]:
-            return _serialize_string(token["value"], "'")
-        return _serialize_string(token["value"], '"')
+        return serialize_string_auto_quote(token["value"])
     elif token["type"] == CSSTokenType.bad_string:
         return '"\n'
     elif token["type"] == CSSTokenType.hash:
@@ -47,7 +43,7 @@ def serialize(token: CSSToken) -> str:
     elif token["type"] == CSSTokenType.url:
         return (
             "url("
-            + _serialize_string(
+            + serialize_string(
                 token["value"], quote="", simple_escape_characters=('"', "'", "(", "\\")
             )
             + ")"
@@ -83,7 +79,17 @@ def serialize_many(token: Iterable[CSSToken]) -> str:
     return "".join(serialize(t) for t in token)
 
 
-def _serialize_string(string: str, quote: str, simple_escape_characters=("\\",)) -> str:
+def serialize_string_auto_quote(string: str) -> str:
+    """Serializes the given string, automatically choosing the best quote
+    character."""
+    if '"' not in string:
+        return serialize_string(string, '"')
+    elif "'" not in string:
+        return serialize_string(string, "'")
+    return serialize_string(string, '"')
+
+
+def serialize_string(string: str, quote: str, simple_escape_characters=("\\",)) -> str:
     """Serializes the given string, using the given quote character."""
     res = quote
     for char in string:

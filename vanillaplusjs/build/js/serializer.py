@@ -1,5 +1,6 @@
 from typing import Iterable
 from .token import JSToken, JSTokenType
+from vanillaplusjs.build.css.serializer import serialize_string_auto_quote
 
 
 def serialize(token: JSToken) -> str:
@@ -34,7 +35,7 @@ def serialize(token: JSToken) -> str:
     elif token["type"] == JSTokenType.identifier:
         return token["value"]
     elif token["type"] == JSTokenType.string_literal:
-        return f'"{token["value"]}"'
+        return serialize_string_auto_quote(token["value"])
     elif token["type"] == JSTokenType.semicolon:
         return ";"
     elif token["type"] == JSTokenType.invalid:
