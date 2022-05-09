@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 import os
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from vanillaplusjs.build.css.manips.icons.settings import IconSettings
 
 
 @dataclass
@@ -23,6 +26,9 @@ class BuildContext:
 
     default_css_file: str = "src/public/css/main.css"
     """The default css file for imports if not specified"""
+
+    icon_settings: "IconSettings" = None
+    """The icon settings to use when generating icons"""
 
     @property
     def src_folder(self) -> str:

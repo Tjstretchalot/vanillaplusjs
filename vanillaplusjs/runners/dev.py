@@ -1,5 +1,6 @@
 from typing import Sequence, Set
 from vanillaplusjs.build.build_context import BuildContext
+from vanillaplusjs.build.css.manips.icons.settings import load_icon_settings
 from vanillaplusjs.build.file_signature import get_file_signature
 from vanillaplusjs.build.graph import FileDependencyGraph
 from vanillaplusjs.build.hot_incremental_rebuild import hot_incremental_rebuild
@@ -186,6 +187,7 @@ class DevEventHandler(FileSystemEventHandler):
             config = json.load(f)
 
         context.host = config["host"]
+        context.icon_settings = load_icon_settings(context)
 
         old_dependency_graph = FileDependencyGraph()
         old_output_graph = FileDependencyGraph()

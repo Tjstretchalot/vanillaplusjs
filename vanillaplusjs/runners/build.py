@@ -6,6 +6,7 @@ import sys
 import json
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.cold_incremental_rebuild import cold_incremental_rebuild
+from vanillaplusjs.build.css.manips.icons.settings import load_icon_settings
 import vanillaplusjs.constants
 from vanillaplusjs.build.graph import FileDependencyGraph
 import asyncio
@@ -81,6 +82,8 @@ def build(folder: str, dev: bool) -> None:
     if not os.path.exists(context.src_folder):
         print("No src folder found")
         sys.exit(1)
+
+    context.icon_settings = load_icon_settings(context)
 
     old_dependency_graph = FileDependencyGraph()
     # In this graph, all the files in the graph are input files, and input
