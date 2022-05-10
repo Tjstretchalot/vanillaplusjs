@@ -76,7 +76,7 @@ async def hot_incremental_rebuild(
         context.folder,
     )
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
+    with concurrent.futures.ProcessPoolExecutor() as executor:
         updated_children: Dict[str, ScanFileResult] = await scan_files(
             context,
             executor,
