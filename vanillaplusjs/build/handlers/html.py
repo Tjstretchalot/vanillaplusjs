@@ -5,7 +5,8 @@ hashes that output as if via hash.
 
 from typing import List
 from vanillaplusjs.build.build_context import BuildContext
-from vanillaplusjs.build.build_file import BuildFileResult
+from vanillaplusjs.build.build_file_result import BuildFileResult
+from vanillaplusjs.build.html.manips.images.manip import ImagesManipulator
 from vanillaplusjs.build.html.manips.link_rel_canonical import (
     LinkRelCanonicalManipulator,
 )
@@ -15,13 +16,14 @@ from vanillaplusjs.build.html.manips.link_hash import (
 import vanillaplusjs.build.handlers.copy
 import vanillaplusjs.build.handlers.hash
 from vanillaplusjs.build.html.manipulate_and_serialize import manipulate_and_serialize
-from vanillaplusjs.build.scan_file import ScanFileResult
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 import os
 
 
 MANIPULATORS = [
     LinkRelCanonicalManipulator,
     LinkHash,
+    ImagesManipulator,
 ]
 """The manipulators to apply to the document. Each manipulator is a subclass
 of HTMLManipulator whose init function accepts

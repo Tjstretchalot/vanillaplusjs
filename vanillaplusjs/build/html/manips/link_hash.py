@@ -1,6 +1,6 @@
 from typing import Dict, List, Literal, Optional, Set
-from vanillaplusjs.build.build_file import BuildFileResult
-from vanillaplusjs.build.scan_file import ScanFileResult
+from vanillaplusjs.build.build_file_result import BuildFileResult
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.build.html.manipulator import HTMLManipulator
 import vanillaplusjs.build.html.token as tkn
 from vanillaplusjs.build.build_context import BuildContext

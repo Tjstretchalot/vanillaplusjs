@@ -1,35 +1,14 @@
-from dataclasses import dataclass
-from typing import List
 from .build_context import BuildContext
-
-
-@dataclass
-class BuildFileResult:
-    """The result of building a file."""
-
-    children: List[str]
-    """The relative paths (to the project root) of the files we relied on to
-    build this file. This must exactly match the scanned children of the file.
-    """
-
-    produced: List[str]
-    """The relative paths (to the project root) of the files that were produced
-    by this file.
-    """
-
-    reused: List[str]
-    """The relative paths (to the project root) of the files which we would have
-    produced, but they were already available, so we did not produce them.
-    """
-
-
+from .build_file_result import BuildFileResult
 import vanillaplusjs.build.handlers.copy_and_hash
 import vanillaplusjs.build.handlers.html
 import vanillaplusjs.build.handlers.css
 import vanillaplusjs.build.handlers.js
 
+__all__ = ["build_file"]
 
-def build_file(build_context: BuildContext, relpath: str) -> BuildFileResult:
+
+def build_file(build_context: "BuildContext", relpath: str) -> BuildFileResult:
     """Builds the file within the given context. This assumes that all the
     children have already been built. This MUST be multi-process safe; this MAY
     be called concurrently for different files.

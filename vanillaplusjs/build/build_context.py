@@ -4,6 +4,7 @@ from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from vanillaplusjs.build.css.manips.icons.settings import IconSettings
+    from vanillaplusjs.build.html.manips.images.settings import ImageSettings
 
 
 @dataclass
@@ -30,6 +31,9 @@ class BuildContext:
     icon_settings: "IconSettings" = None
     """The icon settings to use when generating icons"""
 
+    image_settings: "ImageSettings" = None
+    """The image settings to use when generating images"""
+
     @property
     def src_folder(self) -> str:
         """Returns the src folder where the input files are located"""
@@ -46,7 +50,7 @@ class BuildContext:
         return os.path.join(self.folder, "out")
 
     @property
-    def artifacts_Folder(self) -> str:
+    def artifacts_folder(self) -> str:
         """Returns the artifacts folder, where expensive to recreate files are
         located
         """

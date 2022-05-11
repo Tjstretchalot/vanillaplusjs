@@ -3,9 +3,9 @@ from xml.etree.ElementTree import Comment
 from vanillaplusjs.build.css.manipulator import CSSManipulator
 from typing import Dict, List, Literal, Optional, Set, Generator
 from vanillaplusjs.build.build_context import BuildContext
-from vanillaplusjs.build.build_file import BuildFileResult
+from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.css.tokenizer import tokenize_and_close
-from vanillaplusjs.build.scan_file import ScanFileResult
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.build.css.token import CSSToken, CSSTokenType
 import vanillaplusjs.build.css.serializer
 from dataclasses import dataclass

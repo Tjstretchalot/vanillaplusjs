@@ -5,7 +5,7 @@ hashes that output as if via hash.
 
 from typing import List
 from vanillaplusjs.build.build_context import BuildContext
-from vanillaplusjs.build.build_file import BuildFileResult
+from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.css.manips.nest import (
     NestManipulator,
 )
@@ -13,7 +13,7 @@ from vanillaplusjs.build.css.manips.icons.manip import IconManipulator
 import vanillaplusjs.build.handlers.copy
 import vanillaplusjs.build.handlers.hash
 from vanillaplusjs.build.css.manipulate_and_serialize import manipulate_and_serialize
-from vanillaplusjs.build.scan_file import ScanFileResult
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 import os
 
 

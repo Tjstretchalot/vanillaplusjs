@@ -4,6 +4,7 @@ import os
 import shutil
 import vanillaplusjs.runners.init
 import vanillaplusjs.constants
+from vanillaplusjs.build.html.manips.images.settings import load_image_settings
 import json
 
 
@@ -26,6 +27,18 @@ class Test(unittest.TestCase):
             self.assertEqual(
                 configuration["version"], vanillaplusjs.constants.CONFIGURATION_VERSION
             )
+        finally:
+            shutil.rmtree("tmp")
+
+    def test_initializes_image_settings(self):
+        os.makedirs(os.path.join("tmp"), exist_ok=True)
+        try:
+            vanillaplusjs.runners.init.main(["--folder", "tmp"])
+            with open(os.path.join("tmp", "vanillaplusjs.json")) as f:
+                configuration = json.load(f)
+
+            self.assertIn("images", configuration)
+            load_image_settings(configuration["images"])
         finally:
             shutil.rmtree("tmp")
 

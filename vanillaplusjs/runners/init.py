@@ -1,3 +1,4 @@
+import decimal
 from typing import Optional, Sequence
 import argparse
 import os
@@ -56,8 +57,100 @@ def init(folder: str, host: Optional[str] = None) -> None:
                 {
                     "version": vanillaplusjs.constants.CONFIGURATION_VERSION,
                     "host": host,
+                    "images": {
+                        "formats": {
+                            "jpeg": {
+                                "exports": {
+                                    "50": {
+                                        "min_area_px2": 600 * 600,
+                                        "max_area_px2": None,
+                                        "preference": 1,
+                                        "formatter_kwargs": {"quality": 50},
+                                    },
+                                    "75": {
+                                        "min_area_px2": None,
+                                        "max_area_px2": None,
+                                        "preference": 2,
+                                        "formatter_kwargs": {"quality": 75},
+                                    },
+                                    "85": {
+                                        "min_area_px2": None,
+                                        "max_area_px2": None,
+                                        "preference": 3,
+                                        "formatter_kwargs": {"quality": 85},
+                                    },
+                                    "100": {
+                                        "min_area_px2": None,
+                                        "max_area_px2": 600 * 600,
+                                        "preference": 5,
+                                        "formatter_kwargs": {"quality": 100},
+                                    },
+                                },
+                                "minimum_unit_size_bytes": 85_000,
+                            },
+                            "webp": {
+                                "exports": {
+                                    "50": {
+                                        "min_area_px2": 400 * 400,
+                                        "max_area_px2": None,
+                                        "preference": 1,
+                                        "formatter_kwargs": {
+                                            "quality": 50,
+                                            "method": 6,
+                                            "lossless": False,
+                                        },
+                                    },
+                                    "75": {
+                                        "min_area_px2": 600 * 600,
+                                        "max_area_px2": None,
+                                        "preference": 2,
+                                        "formatter_kwargs": {
+                                            "quality": 75,
+                                            "method": 6,
+                                            "lossless": False,
+                                        },
+                                    },
+                                    "85": {
+                                        "min_area_px2": None,
+                                        "max_area_px2": None,
+                                        "preference": 3,
+                                        "formatter_kwargs": {
+                                            "quality": 85,
+                                            "method": 6,
+                                            "lossless": False,
+                                        },
+                                    },
+                                    "100": {
+                                        "min_area_px2": None,
+                                        "max_area_px2": 600 * 600,
+                                        "preference": 5,
+                                        "formatter_kwargs": {
+                                            "quality": 100,
+                                            "method": 6,
+                                            "lossless": False,
+                                        },
+                                    },
+                                    "lossless": {
+                                        "min_area_px2": None,
+                                        "max_area_px2": 400 * 400,
+                                        "preference": 8,
+                                        "formatter_kwargs": {
+                                            "quality": 100,
+                                            "method": 6,
+                                            "lossless": True,
+                                        },
+                                    },
+                                },
+                                "minimum_unit_size_bytes": 85_000,
+                            },
+                        },
+                        "default_format": "jpeg",
+                        "maximum_resolution": 7,
+                        "resolution_step": decimal.Decimal(0.5),
+                    },
                 },
                 f,
+                cls=DecimalEncoder,
             )
 
     os.makedirs(os.path.join(folder, "src", "public", "img"), exist_ok=True)
@@ -76,3 +169,10 @@ def init(folder: str, host: Optional[str] = None) -> None:
             print("  <h1>VanillaPlusJS</h1>", file=f)
             print("</body>", file=f)
             print("</html>", file=f)
+
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            return str(o)
+        return super().default(o)

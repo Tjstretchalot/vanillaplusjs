@@ -1,31 +1,14 @@
-from typing import List
-from dataclasses import dataclass
 from vanillaplusjs.build.build_context import BuildContext
-
-
-@dataclass
-class ScanFileResult:
-    """Result of successfully scanning a file."""
-
-    dependencies: List[str]
-    """The files which must have been built before this file can be built"""
-
-    produces: List[str]
-    """The files which will be produced when building this file. We guarrantee
-    repeatable rebuilds, meaning that it will produce the exact same set of
-    files with the exact same contents every time. Furthermore, if two different
-    files produce the same output file, then they will both produce the same
-    output file.
-    """
-
-
 import vanillaplusjs.build.handlers.copy_and_hash
 import vanillaplusjs.build.handlers.html
 import vanillaplusjs.build.handlers.css
 import vanillaplusjs.build.handlers.js
+from vanillaplusjs.build.scan_file_result import ScanFileResult
+
+__all__ = ["scan_file"]
 
 
-def scan_file(context: BuildContext, relpath: str) -> ScanFileResult:
+def scan_file(context: "BuildContext", relpath: str) -> ScanFileResult:
     """Synchronously parses the given file and returns the list of files it
     directly depends on and the files it will produce when built. This should
     not be recursive; it can be assumed that if any of the returned files have

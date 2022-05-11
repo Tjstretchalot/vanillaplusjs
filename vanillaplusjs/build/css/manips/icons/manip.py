@@ -5,8 +5,8 @@ from vanillaplusjs.build.css.manips.icons.tokenizer import tokenize
 from vanillaplusjs.build.css.manipulator import CSSManipulator
 from typing import List, Literal, Optional, Set
 from vanillaplusjs.build.build_context import BuildContext
-from vanillaplusjs.build.build_file import BuildFileResult
-from vanillaplusjs.build.scan_file import ScanFileResult
+from vanillaplusjs.build.build_file_result import BuildFileResult
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.build.css.token import CSSToken, CSSTokenType
 from loguru import logger
 import re

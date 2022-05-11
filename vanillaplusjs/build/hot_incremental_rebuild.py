@@ -1,17 +1,19 @@
 from typing import Dict, List, Set
 from vanillaplusjs.build.build_context import BuildContext
-from vanillaplusjs.build.build_file import BuildFileResult, build_file
+from vanillaplusjs.build.build_file_result import BuildFileResult
+from vanillaplusjs.build.build_file import build_file
 from vanillaplusjs.build.exceptions import (
     CyclicDependencyException,
-    MissingConfigurationException,
 )
 from vanillaplusjs.build.file_signature import FileSignature, get_file_signature
-from vanillaplusjs.build.scan_file import ScanFileResult, scan_file
+from vanillaplusjs.build.scan_file import scan_file
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 from .graph import FileDependencyGraph
 from loguru import logger
 import concurrent.futures
 import os
 import asyncio
+import itertools
 
 
 async def hot_incremental_rebuild(
@@ -85,6 +87,7 @@ async def hot_incremental_rebuild(
 
         files_to_rebuild: Set[str] = set()
         dirtied_outputs: Set[str] = set()
+        dirtied_artifacts: Set[str] = set()
         stack: List[str] = []
 
         for file, new_info in updated_children.items():
@@ -107,7 +110,10 @@ async def hot_incremental_rebuild(
 
             if file in old_output_graph:
                 for child in old_output_graph.get_children(file):
-                    dirtied_outputs.add(child)
+                    if child.startswith("artifacts"):
+                        dirtied_artifacts.add(child)
+                    else:
+                        dirtied_outputs.add(child)
 
         files_to_rebuild = [
             file for file in files_to_rebuild if file not in deleted_files
@@ -115,6 +121,14 @@ async def hot_incremental_rebuild(
 
         logger.debug("{} files to rebuild", len(files_to_rebuild))
         logger.debug("{} files to clean", len(dirtied_outputs))
+        logger.debug("{} files to possibly clean", len(dirtied_artifacts))
+
+        possibly_empty_folders = set()
+        for file in itertools.chain(dirtied_outputs, dirtied_artifacts):
+            folder = os.path.dirname(file)
+            while folder != "":
+                possibly_empty_folders.add(folder)
+                folder = os.path.dirname(folder)
 
         for file in dirtied_outputs:
             logger.debug("Cleaning {}", file)
@@ -124,8 +138,10 @@ async def hot_incremental_rebuild(
         pending_results: Dict[str, asyncio.Future] = dict()
         still_dirty_outputs = set(dirtied_outputs)
         pending_dirty_outputs = set()
+        still_dirty_artifacts = set(dirtied_artifacts)
+        pending_artifacts = set()
 
-        while files_to_rebuild:
+        while files_to_rebuild or pending_results:
             rebuildable_files: List[str] = []
             for file in files_to_rebuild:
                 file_depends_on: List[str] = None
@@ -158,9 +174,10 @@ async def hot_incremental_rebuild(
 
                 all_outputs_not_pending = True
                 for output in file_creates:
-                    if output in pending_dirty_outputs:
+                    if output in pending_dirty_outputs or output in pending_artifacts:
+                        all_outputs_not_pending = False
                         logger.debug(
-                            "Cannot rebuild {} until we have finished cleaning {}",
+                            "Cannot rebuild {} while we are cleaning {}",
                             file,
                             output,
                         )
@@ -172,6 +189,8 @@ async def hot_incremental_rebuild(
                 for output in file_creates:
                     if output in still_dirty_outputs:
                         pending_dirty_outputs.add(output)
+                    elif output in dirtied_artifacts:
+                        pending_artifacts.add(output)
 
             if not rebuildable_files and not pending_results:
                 logger.error("No files to rebuild")
@@ -204,6 +223,13 @@ async def hot_incremental_rebuild(
                             logger.debug("Cleaned {} using {}", file, pending_file)
                             still_dirty_outputs.remove(file)
                             pending_dirty_outputs.remove(file)
+                        elif file in still_dirty_artifacts:
+                            logger.debug("Cleaned {} using {}", file, pending_file)
+                            still_dirty_artifacts.remove(file)
+                            pending_artifacts.remove(file)
+                        elif file in dirtied_artifacts:
+                            logger.debug("Updated {} using {}", file, pending_file)
+                            pending_artifacts.remove(file)
                         else:
                             logger.debug("Produced {} from {}", file, pending_file)
                     for file in rebuild_result.reused:
@@ -214,10 +240,34 @@ async def hot_incremental_rebuild(
                             )
                             still_dirty_outputs.remove(file)
                             pending_dirty_outputs.remove(file)
+                        elif file in still_dirty_artifacts:
+                            logger.debug(
+                                "Determined {} is not dirty using {}",
+                                file,
+                                pending_file,
+                            )
+                            still_dirty_artifacts.remove(file)
+                            pending_artifacts.remove(file)
+                        elif file in dirtied_artifacts:
+                            logger.debug("Reused {} in {}", file, pending_file)
+                            pending_artifacts.remove(file)
                         else:
                             logger.debug("Reused {} for {}", file, pending_file)
 
         logger.debug("Finished rebuilding {} files", len(updated_results))
+
+        for file in still_dirty_artifacts:
+            logger.debug("Cleaning {}", file)
+            os.unlink(os.path.join(context.folder, file))
+
+        for folder_relpath in sorted(possibly_empty_folders, key=lambda s: -len(s)):
+            folder = os.path.join(context.folder, folder_relpath)
+            scandir_iter = os.scandir(folder)
+            has_any_contents = next(scandir_iter, None) is not None
+            scandir_iter.close()
+            if not has_any_contents:
+                logger.debug("Cleaning empty folder {}", folder_relpath)
+                os.rmdir(folder)
 
         new_dependency_graph = FileDependencyGraph()
         new_output_graph = FileDependencyGraph()

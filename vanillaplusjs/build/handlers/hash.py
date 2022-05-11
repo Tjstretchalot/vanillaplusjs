@@ -6,8 +6,8 @@ or out folder.
 import os
 from typing import Optional
 from vanillaplusjs.build.build_context import BuildContext
-from vanillaplusjs.build.build_file import BuildFileResult
-from vanillaplusjs.build.scan_file import ScanFileResult
+from vanillaplusjs.build.build_file_result import BuildFileResult
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 import hashlib
 import base64
 

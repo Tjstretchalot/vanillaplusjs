@@ -7,6 +7,7 @@ import json
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.cold_incremental_rebuild import cold_incremental_rebuild
 from vanillaplusjs.build.css.manips.icons.settings import load_icon_settings
+from vanillaplusjs.build.html.manips.images.settings import load_image_settings
 import vanillaplusjs.constants
 from vanillaplusjs.build.graph import FileDependencyGraph
 import asyncio
@@ -84,6 +85,7 @@ def build(folder: str, dev: bool) -> None:
         sys.exit(1)
 
     context.icon_settings = load_icon_settings(context)
+    context.image_settings = load_image_settings(config["images"])
 
     old_dependency_graph = FileDependencyGraph()
     # In this graph, all the files in the graph are input files, and input

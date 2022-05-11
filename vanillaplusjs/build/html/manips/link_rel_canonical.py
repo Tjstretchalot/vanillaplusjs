@@ -1,12 +1,12 @@
 from typing import List, Literal, Optional
-from vanillaplusjs.build.build_file import BuildFileResult
+from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.exceptions import MissingConfigurationException
 from vanillaplusjs.build.html.manipulator import HTMLManipulator
 import vanillaplusjs.build.html.token as tkn
 from vanillaplusjs.build.build_context import BuildContext
 import os
 
-from vanillaplusjs.build.scan_file import ScanFileResult
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 
 
 PUBLIC_PREFIX_LENGTH = len(os.path.join("src", "public")) + len(os.path.sep)

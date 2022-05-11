@@ -4,6 +4,7 @@ from vanillaplusjs.build.css.manips.icons.settings import load_icon_settings
 from vanillaplusjs.build.file_signature import get_file_signature
 from vanillaplusjs.build.graph import FileDependencyGraph
 from vanillaplusjs.build.hot_incremental_rebuild import hot_incremental_rebuild
+from vanillaplusjs.build.html.manips.images.settings import load_image_settings
 from .build import build, detect_symlink_support
 from .run import run_server
 import argparse
@@ -188,6 +189,7 @@ class DevEventHandler(FileSystemEventHandler):
 
         context.host = config["host"]
         context.icon_settings = load_icon_settings(context)
+        context.image_settings = load_image_settings(config["images"])
 
         old_dependency_graph = FileDependencyGraph()
         old_output_graph = FileDependencyGraph()

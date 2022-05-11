@@ -1,9 +1,9 @@
 from typing import Generator, List, Literal, Optional, Set, Tuple, Union
 from vanillaplusjs.build.build_context import BuildContext
-from vanillaplusjs.build.build_file import BuildFileResult
+from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.js.yield_manipulator import JSYieldManipulator
 from vanillaplusjs.build.js.token import JSToken, JSTokenType
-from vanillaplusjs.build.scan_file import ScanFileResult
+from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.constants import PROCESSOR_VERSION
 import os
 

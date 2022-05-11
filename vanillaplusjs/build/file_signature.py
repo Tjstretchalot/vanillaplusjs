@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import os
 
 
-@dataclass
+@dataclass(frozen=True)
 class FileSignature:
     """Describes a files signature. If a file differs in any of these fields
     from the previous build, it will be rebuilt.
