@@ -4,8 +4,7 @@ import vanillaplusjs.build.handlers.copy_and_hash
 import vanillaplusjs.build.handlers.html
 import vanillaplusjs.build.handlers.css
 import vanillaplusjs.build.handlers.js
-
-__all__ = ["build_file"]
+import vanillaplusjs.build.handlers.image_glue
 
 
 def build_file(build_context: "BuildContext", relpath: str) -> BuildFileResult:
@@ -26,6 +25,10 @@ def build_file(build_context: "BuildContext", relpath: str) -> BuildFileResult:
     Returns:
         BuildFileResult: If the file is built successfully
     """
+    if vanillaplusjs.build.handlers.image_glue.handles_file(build_context, relpath):
+        return vanillaplusjs.build.handlers.image_glue.build_file(
+            build_context, relpath
+        )
     if relpath.endswith(".html"):
         return vanillaplusjs.build.handlers.html.build_file(build_context, relpath)
     elif relpath.endswith(".css"):

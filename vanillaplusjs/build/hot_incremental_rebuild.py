@@ -35,11 +35,10 @@ async def hot_incremental_rebuild(
     Args:
         context (BuildContext): The configuration of the build
         old_dependency_graph (FileDependencyGraph):
-            If specified, provides the dependencies of the old build. If
-            a file matches the signature in the old dependency graph
-            (mtime, size, inode), then we will reuse the old list of
-            dependencies rather than having to parse the file in the first
-            pass.
+            If specified, provides the dependencies of the old build. The file
+            "parent" is a parent of the file "child" if the outputs of "parent"
+            depend on the contents of "child". The dependency graph exclusively
+            references source files.
         old_output_graph (FileDependencyGraph):
             If specified, provides the outputs of the old build. This is used
             for cleaning the out and artifacts folder of files which are not
@@ -79,33 +78,61 @@ async def hot_incremental_rebuild(
     )
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        updated_children: Dict[str, ScanFileResult] = await scan_files(
-            context,
-            executor,
-            list(changed_files.keys()) + list(added_files.keys()),
-        )
+        files_that_need_scanning = list(changed_files.keys()) + list(added_files.keys())
+        updated_children: Dict[str, ScanFileResult] = dict()
+
+        while files_that_need_scanning:
+            additional_children: Dict[str, ScanFileResult] = await scan_files(
+                context, executor, files_that_need_scanning
+            )
+            updated_children.update(additional_children)
+
+            files_that_need_scanning = []
+            for scanned_file_relpath, scan_result in additional_children.items():
+                if scan_result.placeholders:
+                    for (
+                        placeholder_relpath,
+                        placeholder_contents,
+                    ) in scan_result.placeholders.items():
+                        if os.path.exists(
+                            os.path.join(context.folder, placeholder_relpath)
+                        ):
+                            continue
+
+                        logger.info(
+                            "{} generated a placeholder file {}",
+                            scanned_file_relpath,
+                            placeholder_relpath,
+                        )
+                        with open(
+                            os.path.join(context.folder, placeholder_relpath), "w"
+                        ) as f:
+                            f.write(placeholder_contents)
+                        files_that_need_scanning.append(placeholder_relpath)
+                        added_files[placeholder_relpath] = get_file_signature(
+                            os.path.join(context.folder, placeholder_relpath)
+                        )
 
         files_to_rebuild: Set[str] = set()
         dirtied_outputs: Set[str] = set()
         dirtied_artifacts: Set[str] = set()
         stack: List[str] = []
 
-        for file, new_info in updated_children.items():
+        for file in updated_children.keys():
+            files_to_rebuild.add(file)
             stack.append(file)
-            stack.extend(new_info.dependencies)
 
         for file in deleted_files:
+            files_to_rebuild.add(file)
             stack.append(file)
 
         while stack:
             file = stack.pop()
-            if file in files_to_rebuild:
-                continue
-            files_to_rebuild.add(file)
 
             if file in old_dependency_graph:
                 for par in old_dependency_graph.get_parents(file):
                     if par not in files_to_rebuild:
+                        files_to_rebuild.add(file)
                         stack.append(par)
 
             if file in old_output_graph:
@@ -299,13 +326,27 @@ async def hot_incremental_rebuild(
                 file, new_signature.filesize, new_signature.mtime, new_signature.inode
             )
 
+        possibly_empty_output_nodes = set()
         for file, node in old_output_graph.nodes.items():
             if file not in new_output_graph:
+                old_parents = old_output_graph.get_parents(file)
+
+                if old_parents:
+                    # this is produced file; we can delete it from the graph if
+                    # nothing else is now producing it
+                    if any(p in deleted_files for p in old_parents) and not any(
+                        p not in deleted_files and p not in updated_results
+                        for p in old_parents
+                    ):
+                        possibly_empty_output_nodes.add(file)
+                else:
+                    # this is a consumed file; we only need it if it still exists
+                    if file in deleted_files:
+                        continue
+
                 new_output_graph.add_file(file, node.filesize, node.mtime, node.inode)
 
-        for file in list(updated_results.keys()) + list(
-            old_dependency_graph.nodes.keys()
-        ):
+        for file in all_input_files:
             new_dependencies = (
                 updated_results[file].children
                 if file in updated_results
@@ -336,6 +377,10 @@ async def hot_incremental_rebuild(
                 file,
                 new_outputs,
             )
+
+        for node in possibly_empty_output_nodes:
+            if not new_output_graph.get_parents(node):
+                new_output_graph.remove_file(node)
 
         logger.debug("Finished constructing new dependency and output graphs")
 

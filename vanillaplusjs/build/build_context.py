@@ -34,6 +34,9 @@ class BuildContext:
     image_settings: "ImageSettings" = None
     """The image settings to use when generating images"""
 
+    auto_generate_images_js_placeholders: bool = True
+    """If true we will generate src folder placeholder *.images.js files"""
+
     @property
     def src_folder(self) -> str:
         """Returns the src folder where the input files are located"""

@@ -2,6 +2,7 @@ import helper  # noqa
 import unittest
 import os
 import shutil
+from vanillaplusjs.build.graph import FileDependencyGraph
 import vanillaplusjs.runners.init
 import vanillaplusjs.runners.build
 import time
@@ -108,6 +109,43 @@ class Test(unittest.TestCase):
 
             with open(outfile_hash, "r") as f:
                 self.assertEqual(f.read(), hash)
+        finally:
+            shutil.rmtree("tmp")
+
+    def test_removed_file_outputs_removed(self):
+        os.makedirs(os.path.join("tmp"), exist_ok=True)
+        infile_rel_root = os.path.join("src", "public", "test.txt")
+        outfiles_rel_root = [
+            os.path.join("out", "www", "test.txt"),
+            os.path.join("out", "www", "test.txt.hash"),
+        ]
+        try:
+            vanillaplusjs.runners.init.main(["--folder", "tmp"])
+            with open(os.path.join("tmp", infile_rel_root), "w") as f:
+                f.write("test")
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
+            for outfile in outfiles_rel_root:
+                self.assertTrue(os.path.exists(os.path.join("tmp", outfile)))
+
+            with open(os.path.join("tmp", "out", "output_graph.json")) as f:
+                output_graph = FileDependencyGraph.load(f)
+
+            self.assertIn(infile_rel_root, output_graph)
+            self.assertEqual(
+                frozenset(output_graph.get_children(infile_rel_root)),
+                frozenset(outfiles_rel_root),
+            )
+
+            os.remove(os.path.join("tmp", infile_rel_root))
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
+
+            for outfile in outfiles_rel_root:
+                self.assertFalse(os.path.exists(os.path.join("tmp", outfile)))
+
+            with open(os.path.join("tmp", "out", "output_graph.json")) as f:
+                output_graph = FileDependencyGraph.load(f)
+
+            self.assertNotIn(infile_rel_root, output_graph)
         finally:
             shutil.rmtree("tmp")
 

@@ -148,6 +148,7 @@ def init(folder: str, host: Optional[str] = None) -> None:
                         "maximum_resolution": 7,
                         "resolution_step": decimal.Decimal(0.5),
                     },
+                    "auto_generate_images_js_placeholders": True,
                 },
                 f,
                 cls=DecimalEncoder,

@@ -190,6 +190,9 @@ class DevEventHandler(FileSystemEventHandler):
         context.host = config["host"]
         context.icon_settings = load_icon_settings(context)
         context.image_settings = load_image_settings(config["images"])
+        context.auto_generate_images_js_placeholders = config[
+            "auto_generate_images_js_placeholders"
+        ]
 
         old_dependency_graph = FileDependencyGraph()
         old_output_graph = FileDependencyGraph()
