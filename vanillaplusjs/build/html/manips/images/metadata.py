@@ -260,34 +260,45 @@ def get_target(
     target_as_dict = dataclasses.asdict(target)
     settings_hash = hash_image_settings(context.image_settings)
 
-    for entry in os.scandir(art_path):
-        if not entry.is_dir():
-            continue
+    scanner = os.scandir(art_path)
+    try:
+        while True:
+            try:
+                entry = next(scanner)
+            except StopIteration:
+                break
 
-        if not os.path.exists(os.path.join(entry.path, "metadata.json")):
-            lock_path = reserve_target_lock_path(context, relpath)
-            os.makedirs(os.path.dirname(lock_path), exist_ok=True)
-            with fasteners.InterProcessLock(lock_path):
-                if os.path.exists(os.path.join(entry.path, "placeholder.json")):
-                    with open(os.path.join(entry.path, "placeholder.json"), "r") as f:
-                        placeholder = json.load(f)
-                    if placeholder == target_as_dict:
-                        return int(entry.name)
-            continue
+            if not entry.is_dir():
+                continue
 
-        with open(os.path.join(entry.path, "metadata.json"), "r") as f:
-            entry_metadata = json.load(f)
+            if not os.path.exists(os.path.join(entry.path, "metadata.json")):
+                lock_path = reserve_target_lock_path(context, relpath)
+                os.makedirs(os.path.dirname(lock_path), exist_ok=True)
+                with fasteners.InterProcessLock(lock_path):
+                    if os.path.exists(os.path.join(entry.path, "placeholder.json")):
+                        with open(
+                            os.path.join(entry.path, "placeholder.json"), "r"
+                        ) as f:
+                            placeholder = json.load(f)
+                        if placeholder == target_as_dict:
+                            return int(entry.name)
+                continue
 
-        if entry_metadata["settings_hash"] != settings_hash:
-            continue
-        if entry_metadata["source"]["signature"] != source_signature_as_dict:
-            continue
-        if entry_metadata["target"]["settings"] != target_as_dict:
-            continue
+            with open(os.path.join(entry.path, "metadata.json"), "r") as f:
+                entry_metadata = json.load(f)
 
-        return int(entry.name)
+            if entry_metadata["settings_hash"] != settings_hash:
+                continue
+            if entry_metadata["source"]["signature"] != source_signature_as_dict:
+                continue
+            if entry_metadata["target"]["settings"] != target_as_dict:
+                continue
 
-    return None
+            return int(entry.name)
+
+        return None
+    finally:
+        scanner.close()
 
 
 def reserve_target_lock_path(context: BuildContext, relpath: str) -> str:
