@@ -201,104 +201,95 @@ contrast.
 #### Static images in javascript
 
 It is sometimes helpful to be able to control images in javascript, but still
-take advantage of the preprocessing described above. For this purpose, we
-treat the following file special: `src/public/js/modules/kit/images/_static_images.json`
-and we will use it to produce `src/public/js/modules/kit/images/_static_images.js`
-
-Example:
+take advantage of the preprocessing described above. For this purpose we will
+handle the files with the extension `.images.json` as intending to produce a
+file called `.images.js`. The JSON file should be in the following format:
 
 ```json
-[
-    {
-        "slug": "admin-portal-page-users",
-        "filepath": "/img/admin/portal/users.jpg",
-        "width": 219,
-        "height": 219
+{
+    "img1": {
+        "path": "/img/admin/img1.jpg",
+        "width": 100,
+        "height": 100,
+        "crop_style": "cover",
+        "crop_arguments": {},
+        "lazy": true
     }
-]
+}
 ```
 
-will generate something like
+This will produce a placeholder file adjacent to it with the extension
+`.images.js`:
 
 ```js
-/* boilerplate above removed */
+/**
+ * The output for this file is generated via the json file by the same name -
+ * this file is just for type hints.
+ */
 
-const REPRESENTATIONS_BY_SLUG = {
-    "admin-portal-page-users": {
-        jpeg: [
-            new ImageRepresentation("/img/admin/portal/users/219x219-100.jpeg", 219, 219),
-            new ImageRepresentation("/img/admin/portal/users/328x328-100.jpeg", 328, 328),
-            new ImageRepresentation("/img/admin/portal/users/438x438-100.jpeg", 438, 438),
-            new ImageRepresentation("/img/admin/portal/users/547x547-85.jpeg", 547, 547),
-            new ImageRepresentation("/img/admin/portal/users/657x657-85.jpeg", 657, 657),
-            new ImageRepresentation("/img/admin/portal/users/766x766-85.jpeg", 766, 766),
-            new ImageRepresentation("/img/admin/portal/users/876x876-85.jpeg", 876, 876),
-            new ImageRepresentation("/img/admin/portal/users/985x985-85.jpeg", 985, 985),
-            new ImageRepresentation("/img/admin/portal/users/1095x1095-85.jpeg", 1095, 1095),
-            new ImageRepresentation("/img/admin/portal/users/1204x1204-85.jpeg", 1204, 1204),
-            new ImageRepresentation("/img/admin/portal/users/1314x1314-85.jpeg", 1314, 1314),
-            new ImageRepresentation("/img/admin/portal/users/1423x1423-85.jpeg", 1423, 1423),
-            new ImageRepresentation("/img/admin/portal/users/1533x1533-85.jpeg", 1533, 1533),
-        ],
-        webp: [
-            new ImageRepresentation("/img/admin/portal/users/219x219-lossless.webp", 219, 219),
-            new ImageRepresentation("/img/admin/portal/users/328x328-lossless.webp", 328, 328),
-            new ImageRepresentation("/img/admin/portal/users/438x438-100.webp", 438, 438),
-            new ImageRepresentation("/img/admin/portal/users/547x547-100.webp", 547, 547),
-            new ImageRepresentation("/img/admin/portal/users/657x657-85.webp", 657, 657),
-            new ImageRepresentation("/img/admin/portal/users/766x766-85.webp", 766, 766),
-            new ImageRepresentation("/img/admin/portal/users/876x876-85.webp", 876, 876),
-            new ImageRepresentation("/img/admin/portal/users/985x985-85.webp", 985, 985),
-            new ImageRepresentation("/img/admin/portal/users/1095x1095-85.webp", 1095, 1095),
-            new ImageRepresentation("/img/admin/portal/users/1204x1204-85.webp", 1204, 1204),
-            new ImageRepresentation("/img/admin/portal/users/1314x1314-85.webp", 1314, 1314),
-            new ImageRepresentation("/img/admin/portal/users/1423x1423-85.webp", 1423, 1423),
-            new ImageRepresentation("/img/admin/portal/users/1533x1533-75.webp", 1533, 1533),
-        ],
-    },
-};
-
-/* boilerplate below removed */
+/**
+ * Maps from the image name to the image metadata. For each image,
+ * contains the settings used to produce that image from the source
+ * image as well as the outputs produced.
+ *
+ * @type {Object.<string, {target: {settings: {width: number, height: number, crop: 'cover', crop_settings: {pre_top_crop: number, pre_left_crop: number, pre_bottom_crop: number, pre_right_crop: number, crop_left_percentage: number, crop_top_percentage: number}}, outputs: Object.<string, Array.<{width: number, height: number, url: string, choice: string}>>}}>}
+ */
+export default {};
 ```
 
-which can be used as in the following example
+And will produce a corresponding output file which is functionally
+identical to the following:
 
-```html
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Images</title>
-    <style>
-        .example-image {
-            width: 100%;
-            max-width: 590px;
-            height: 425px;
-            overflow: hidden;
+```js
+export default {
+    "img1": {
+        "target": {
+            "outputs": {
+                "jpeg": [
+                    {
+                        "choice": "100",
+                        "height": 20,
+                        "url": "/img/test/1/20x20.jpeg",
+                        "width": 20
+                    },
+                    {
+                        "choice": "100",
+                        "height": 30,
+                        "url": "/img/test/1/30x30.jpeg",
+                        "width": 30
+                    }
+                ],
+                "webp": [
+                    {
+                        "choice": "lossless",
+                        "height": 20,
+                        "url": "/img/test/1/20x20.webp",
+                        "width": 20
+                    },
+                    {
+                        "choice": "lossless",
+                        "height": 30,
+                        "url": "/img/test/1/30x30.webp",
+                        "width": 30
+                    }
+                ]
+            },
+            "settings": {
+                "crop": "cover",
+                "crop_settings": {
+                    "crop_left_percentage": 0.5,
+                    "crop_top_percentage": 0.5,
+                    "pre_bottom_crop": 0,
+                    "pre_left_crop": 0,
+                    "pre_right_crop": 0,
+                    "pre_top_crop": 0
+                },
+                "height": 20,
+                "width": 20
+            }
         }
-
-        .object-fit-cover {
-            object-fit: cover;
-        }
-    </style>
-</head>
-
-<body>
-    <h2>Managed image</h2>
-    <div class="example-image" id="managedImage1"></div>
-
-    <script type="module">
-        import { getStaticImageView } from '/js/modules/kit/images/index.js';
-
-        const lazy = true;
-        const debug = true;
-        const view = getStaticImageView('admin-portal-page-users', ['example-image'], 'alt text', lazy, debug);
-        view.element = document.getElementById('managedImage1');
-        view.recreate();
-    </script>
-</body>
-
-</html>
+    }
+};
 ```
 
 ### Outlining js/css

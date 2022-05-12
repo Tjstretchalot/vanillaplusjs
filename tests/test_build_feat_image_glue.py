@@ -59,7 +59,6 @@ class Test(unittest.TestCase):
                     f.write(val)
 
             vanillaplusjs.runners.build.main(["--folder", "tmp"])
-
             for path, val in conv.items():
                 if isinstance(val, str):
                     with open(os.path.join("tmp", path), "r") as f:
