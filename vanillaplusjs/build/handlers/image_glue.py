@@ -246,7 +246,7 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
         }
 
     os.makedirs(os.path.join(context.folder, os.path.dirname(out_path)), exist_ok=True)
-    with open(os.path.join(context.folder, out_path), "w") as f:
+    with open(os.path.join(context.folder, out_path), "w", newline="\n") as f:
         f.write("export default ")
         json.dump(output_dictionary, f, sort_keys=True)
         f.write(";\n")

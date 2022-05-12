@@ -32,7 +32,7 @@ BASIC = {
         "src/public/js/admin.images.js": True,
         "out/www/js/admin.images.js": True,
         "out/www/js/admin.images.json": False,
-        "out/www/js/admin.images.js.hash": "jkp1MX-g6iHLGxK6tmviZx87-6iNk4LFmFKMpVQrmuU=",
+        "out/www/js/admin.images.js.hash": "9sXRSdXTD_vsFqf1FHJrYc-okBJHXhMNzH1Cisu5A2g=",
         "out/www/img/test/1/20x20.jpeg": True,
         "out/www/img/test/1/20x20.webp": True,
         "out/www/img/test/1/30x30.jpeg": True,
