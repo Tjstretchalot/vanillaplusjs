@@ -143,12 +143,6 @@ class ReferencableRules:
         ref = QualifiedRuleReference(relpath=relpath, prelude=prelude)
         if ref in self.available_rules:
             raise ValueError(f"Rule {ref} is already available")
-        logger.debug(
-            "set_rule({}, {}, missing_references={})",
-            relpath,
-            prelude,
-            missing_references,
-        )
         if not missing_references:
             self.unresolved_rules.pop(ref, None)
             self.resolvable_rules.discard(ref)
@@ -406,8 +400,6 @@ class NestManipulator(CSSManipulator):
         """Does whatever is necessary to resolve the given import, if it
         is possible to do so.
         """
-        logger.debug("resolving import {} in {}", repr(imp), self.relpath)
-
         self._resolve_resolvable()
         if imp in self.referencable_rules.available_rules:
             return
@@ -521,7 +513,6 @@ class NestManipulator(CSSManipulator):
             serialized_prelude = vanillaplusjs.build.css.serializer.serialize_many(
                 prelude
             ).strip()
-            logger.debug("encountered {} in {}", serialized_prelude, imp.relpath)
 
             stack: List[CSSToken] = []
             value: List[CSSToken] = []
@@ -591,7 +582,6 @@ class NestManipulator(CSSManipulator):
 
     def _resolve(self, rule: QualifiedRuleReference) -> None:
         """Resolves the given rule."""
-        logger.debug("resolving {}", repr(rule))
         unresolved_rule = self.referencable_rules.unresolved_rules[rule]
         new_nodes = []
         stack = list(unresolved_rule.rule.simple_block)
