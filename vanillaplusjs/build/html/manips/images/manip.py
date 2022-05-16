@@ -20,8 +20,7 @@ PUBLIC_PREFIX_LENGTH = len(os.path.join("src", "public")) + len(os.path.sep)
 
 PREPROCESSOR_IMAGE_ACTION_RULE = re.compile(r"^\s*\[\s*IMAGE\s*:\s+(?P<args>.*)\]\s*$")
 """
-Regex that matches !PREPROCESSOR: icon [args]
-allows newlines in args
+Regex that matches [IMAGE: <args>]
 """
 
 

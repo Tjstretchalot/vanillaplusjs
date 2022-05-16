@@ -213,13 +213,11 @@ class OutlineManipulator(HTMLManipulator):
         return node["type"] == "StartTag" and node["name"] == "style"
 
     def scan_result(self) -> ScanFileResult:
-        """The scan result for this manipulator is always empty."""
         return ScanFileResult(
             dependencies=list(self.dependencies), produces=list(self.produces)
         )
 
     def build_result(self) -> BuildFileResult:
-        """The build result for this manipulator is always empty."""
         return BuildFileResult(
             children=list(self.children),
             produced=list(self.produced),

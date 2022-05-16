@@ -1,6 +1,7 @@
 from typing import List, Optional
 from .manipulator import HTMLManipulator
 from .builder import HTMLBuilder
+from .tokenizer import tokenize
 import html5lib
 import os
 
@@ -17,18 +18,11 @@ def manipulate_and_serialize(
     builder = HTMLBuilder(manipulators)
 
     with open(infile, "r") as f:
-        tb = html5lib.treebuilders.getTreeBuilder("dom")
-        parser = html5lib.HTMLParser(tb, strict=False, namespaceHTMLElements=False)
         try:
-            doc = parser.parse(f, scripting=False)
+            for token in tokenize(f):
+                builder.handle_token(token)
         except html5lib.html5parser.ParseError:
-            raise ValueError(
-                f"{infile} is not a valid HTML file; errors={parser.errors}"
-            )
-
-        walker = html5lib.getTreeWalker("dom")
-        for token in walker(doc):
-            builder.handle_token(token)
+            raise ValueError(f"{infile} is not a valid HTML file")
 
     if outfile is None:
         return

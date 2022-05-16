@@ -16,6 +16,7 @@ from vanillaplusjs.build.html.manips.link_hash import (
 import vanillaplusjs.build.handlers.copy
 import vanillaplusjs.build.handlers.hash
 from vanillaplusjs.build.html.manips.outline import OutlineManipulator
+from vanillaplusjs.build.html.manips.template import TemplateManipulator
 from vanillaplusjs.build.html.manipulate_and_serialize import manipulate_and_serialize
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 import os
@@ -45,11 +46,16 @@ def manipulators(
             vanillaplusjs.build.handlers.js,
             vanillaplusjs.build.handlers.css,
         ),
+        TemplateManipulator(context, relpath, mode),
     ]
 
 
 def scan_file(context: BuildContext, relpath: str) -> ScanFileResult:
     if not relpath.endswith(".html"):
+        return ScanFileResult([], [])
+
+    target_path = vanillaplusjs.build.handlers.copy.get_target_path(context, relpath)
+    if target_path is None:
         return ScanFileResult([], [])
 
     dependencies = set()
@@ -78,6 +84,8 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
         return BuildFileResult([], [], [])
 
     target_path = vanillaplusjs.build.handlers.copy.get_target_path(context, relpath)
+    if target_path is None:
+        return BuildFileResult([], [], [])
 
     children = set()
     produced = set()

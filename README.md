@@ -304,34 +304,39 @@ that fails when deployed.
 
 ### Templates
 
-Some parts of the HTML are quite repetitive. This library makes no effort
+Some parts of the HTML are quite repetitive. This library does not intend
 to completely remove the boilerplate and does prefer clarity over brevity,
 however, some amount of DRY is necessary to keep the code readable.
 Extremely basic HTML templating is supported with constant variables.
 
-The template file should go in the `partials` subdirectory of `public`
+The template file should go in the `partials` subdirectory of `src` folder
 and works as follows:
 
-index.html
+src/public/index.html
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-    <!--[IMPORT /partials/head/standard.html "Try it Now"]-->
+    <!--[TEMPLATE: ["/head/standard.html", {"title": "Try it Now"}]]-->
 </head>
 <body>
 </body>
 </html>
 ```
 
-src/public/partials/head/standard.html
+src/partials/head/standard.html
 
 ```html
-<title>
-    <!--[ARG 0 "Default Title"]-->
-</title>
+<title><!--[STACK: ["retrieve", "title"]]--></title>
 <meta charset="utf-8">
+```
+
+You can also use the stack to define local variables:
+
+```html
+<!--[STACK: ["define", "price", "$24.99"]]-->
+<p>Get it today! Just <!--[STACK: ["retrieve", "price"]]--></p>
 ```
 
 ### External dependencies
