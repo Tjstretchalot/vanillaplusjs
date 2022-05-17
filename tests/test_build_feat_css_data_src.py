@@ -3,6 +3,7 @@ import helper  # noqa
 import unittest
 import os
 import shutil
+from vanillaplusjs.constants import PROCESSOR_VERSION
 import vanillaplusjs.runners.init
 import vanillaplusjs.runners.build
 
@@ -19,11 +20,14 @@ BASIC = {
     },
     "conv": {
         "out/www/img/gen/css/main/1.svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='#343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/></svg>",
+        "out/www/img/gen/css/main/1.svg.hash": "gprT7QwviS59-EmJB43UJG_ApfGheUOeYxRGJGXbsvY=",
         "out/www/css/main.css": """
 .button {
-    background: url("/img/gen/css/main/1.svg");
+    background: url("/img/gen/css/main/1.svg?v=gprT7QwviS59-EmJB43UJG_ApfGheUOeYxRGJGXbsvY=&pv={PROCESSOR_VERSION}");
 }
-""",
+""".replace(
+            "{PROCESSOR_VERSION}", PROCESSOR_VERSION
+        ),
     },
 }
 

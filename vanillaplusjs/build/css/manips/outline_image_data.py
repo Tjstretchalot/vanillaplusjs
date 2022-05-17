@@ -4,9 +4,12 @@ from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.build.css.manipulator import CSSManipulator
 from vanillaplusjs.build.css.token import CSSToken, CSSTokenType
+import vanillaplusjs.build.handlers.hash as hash_handler
 from urllib.parse import unquote
 import re
 import os
+
+from vanillaplusjs.constants import PROCESSOR_VERSION
 
 
 IMAGE_DATA_REGEX = re.compile(
@@ -105,7 +108,7 @@ class OutlineImageDataManipulator(CSSManipulator):
             )
             self.image_relpath_by_data[image_data] = out_relpath
 
-        result = [
+        result: List[CSSToken] = [
             self.stack[0],
             CSSToken(
                 type=CSSTokenType.string,
@@ -119,18 +122,32 @@ class OutlineImageDataManipulator(CSSManipulator):
         self.skip_next_url_function = True
 
         if self.mode == "scan":
-            self.produces.add(out_relpath)
+            if need_to_create:
+                self.produces.add(out_relpath)
+                hash_scan_result = hash_handler.scan_file(self.context, out_relpath)
+                self.dependencies.union(hash_scan_result.dependencies)
+                self.produces.union(hash_scan_result.produces)
             return result
 
+        out_path = os.path.join(self.context.folder, out_relpath)
         if need_to_create:
             if os.path.lexists(out_relpath):
                 self.reused.add(out_relpath)
             else:
                 self.produced.add(out_relpath)
-                out_path = os.path.join(self.context.folder, out_relpath)
                 os.makedirs(os.path.dirname(out_path), exist_ok=True)
                 with open(out_path, "w", newline="\n") as f:
                     f.write(unquote(image_data))
+
+            hash_build_result = hash_handler.build_file(self.context, out_relpath)
+            self.children.union(hash_build_result.children)
+            self.produced.union(hash_build_result.produced)
+            self.reused.union(hash_build_result.reused)
+
+        with open(out_path + ".hash") as f:
+            hash_value = f.read()
+
+        result[1]["value"] += f"?v={hash_value}&pv={PROCESSOR_VERSION}"
 
         return result
 
