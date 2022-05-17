@@ -433,7 +433,7 @@ def _consume_ident_like(fp: PreprocessedTextIO) -> Optional[CSSToken]:
         if peek_2[0] in ('"', "'") or (
             len(peek_2) == 2 and _is_whitespace(peek_2[0]) and peek_2[1] in ('"', "'")
         ):
-            return CSSTokenType(type=CSSTokenType.function, value=string)
+            return CSSToken(type=CSSTokenType.function, value=string)
 
         return _consume_url(fp)
 

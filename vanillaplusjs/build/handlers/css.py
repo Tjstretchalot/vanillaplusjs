@@ -10,6 +10,9 @@ from vanillaplusjs.build.css.manips.nest import (
     NestManipulator,
 )
 from vanillaplusjs.build.css.manips.icons.manip import IconManipulator
+from vanillaplusjs.build.css.manips.outline_image_data import (
+    OutlineImageDataManipulator,
+)
 import vanillaplusjs.build.handlers.copy
 import vanillaplusjs.build.handlers.hash
 from vanillaplusjs.build.css.manipulate_and_serialize import manipulate_and_serialize
@@ -20,6 +23,7 @@ import os
 MANIPULATORS = [
     NestManipulator,
     IconManipulator,
+    OutlineImageDataManipulator,
 ]
 """The manipulators to apply to the document. Each manipulator is a subclass
 of CSSManipulator whose init function accepts
