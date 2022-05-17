@@ -347,7 +347,7 @@ def produce_image(
         image = image.crop((x, y, x + w, y + h))
 
     if image.width != width or image.height != height:
-        image = image.resize((width, height), Image.LANCZOS)
+        image = image.resize((width, height), Image.Resampling.LANCZOS)
 
     logger.debug("Exporting to {}", dst_file)
     os.makedirs(os.path.dirname(dst_file), exist_ok=True)
