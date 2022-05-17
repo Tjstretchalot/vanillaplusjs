@@ -5,6 +5,7 @@ from vanillaplusjs.build.js.yield_manipulator import JSYieldManipulator
 from vanillaplusjs.build.js.token import JSToken, JSTokenType
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.constants import PROCESSOR_VERSION
+from urllib.parse import urlencode
 import os
 
 
@@ -153,7 +154,9 @@ class HashImportsManipulator(JSYieldManipulator):
         with open(exp_hash_file, "r") as f:
             file_hash = f.read()
 
-        new_import_path = import_path + f"?v={file_hash}&pv={PROCESSOR_VERSION}"
+        new_import_path = (
+            import_path + "?" + urlencode({"v": file_hash, "pv": PROCESSOR_VERSION})
+        )
         self.skip_next_import = True
         return self.stack[:-1] + [
             JSToken(type=JSTokenType.string_literal, value=new_import_path)

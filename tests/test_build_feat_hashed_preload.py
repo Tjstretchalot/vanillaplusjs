@@ -30,7 +30,7 @@ BASIC = {
         "out/www/assets/fonts/test.ttf": "we don't need a real font here for this test",
         "out/www/index.html": """<!DOCTYPE html><html><head><meta charset="utf-8">
     <title>Test</title>
-    <link as="font" href="/assets/fonts/test.ttf?v=QUVT2uNMmAwpHxaQ4w6wrDdwddIgvIWPbLF0X9wZKjs=&amp;pv={PROCESSOR_VERSION}" rel="preload" type="font/ttf">
+    <link as="font" href="/assets/fonts/test.ttf?v=QUVT2uNMmAwpHxaQ4w6wrDdwddIgvIWPbLF0X9wZKjs%3D&amp;pv={PROCESSOR_VERSION}" rel="preload" type="font/ttf">
 </head>
 <body>
     <div class="bg-white">White background</div>

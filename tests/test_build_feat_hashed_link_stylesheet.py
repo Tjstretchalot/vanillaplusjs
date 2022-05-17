@@ -38,7 +38,7 @@ BASIC = {
 """,
         "out/www/index.html": """<!DOCTYPE html><html><head><meta charset="utf-8">
     <title>Test</title>
-    <link href="/css/main.css?v=tgySJ8RxDTfHHxh8YLiT3PluZoOE6QKptkIa5-W2EbY=&amp;pv={PROCESSOR_VERSION}" rel="stylesheet">
+    <link href="/css/main.css?v=tgySJ8RxDTfHHxh8YLiT3PluZoOE6QKptkIa5-W2EbY%3D&amp;pv={PROCESSOR_VERSION}" rel="stylesheet">
 </head>
 <body>
     <div class="bg-white">White background</div>

@@ -13,7 +13,7 @@ from vanillaplusjs.constants import PROCESSOR_VERSION
 
 # We use import syntax in the same order as https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import
 EXPECTED_SUFFIX = (
-    f"v=miPr_dZeaCM4PeNb2iCfcKwSMOI5twWfEsyxMep1Pqc=&pv={PROCESSOR_VERSION}"
+    f"v=miPr_dZeaCM4PeNb2iCfcKwSMOI5twWfEsyxMep1Pqc%3D&pv={PROCESSOR_VERSION}"
 )
 EXPECTED_IMPORT_PATH_LITERAL = f'"/js/example.js?{EXPECTED_SUFFIX}"'
 BASIC = {

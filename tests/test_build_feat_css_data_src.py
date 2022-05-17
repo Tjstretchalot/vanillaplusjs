@@ -23,7 +23,7 @@ BASIC = {
         "out/www/img/gen/css/main/1.svg.hash": "gprT7QwviS59-EmJB43UJG_ApfGheUOeYxRGJGXbsvY=",
         "out/www/css/main.css": """
 .button {
-    background: url("/img/gen/css/main/1.svg?v=gprT7QwviS59-EmJB43UJG_ApfGheUOeYxRGJGXbsvY=&pv={PROCESSOR_VERSION}");
+    background: url("/img/gen/css/main/1.svg?v=gprT7QwviS59-EmJB43UJG_ApfGheUOeYxRGJGXbsvY%3D&pv={PROCESSOR_VERSION}");
 }
 """.replace(
             "{PROCESSOR_VERSION}", PROCESSOR_VERSION

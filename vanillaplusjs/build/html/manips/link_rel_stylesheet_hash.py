@@ -6,6 +6,7 @@ import vanillaplusjs.build.html.token as tkn
 from vanillaplusjs.build.build_context import BuildContext
 import os
 from vanillaplusjs.constants import PROCESSOR_VERSION
+from urllib.parse import urlencode
 
 
 PUBLIC_PREFIX_LENGTH = len(os.path.join("src", "public")) + len(os.path.sep)
@@ -73,7 +74,8 @@ class LinkRelStylesheetHash(HTMLManipulator):
                 name="link",
                 data={
                     (None, "rel"): "stylesheet",
-                    (None, "href"): f"/{dep}?v={hash}&pv={PROCESSOR_VERSION}",
+                    (None, "href"): f"/{dep}?"
+                    + urlencode({"v": hash, "pv": PROCESSOR_VERSION}),
                 },
             )
         ]

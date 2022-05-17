@@ -33,7 +33,7 @@ BASIC = {
 </head>
 <body>
     <div class="bg-white">White background</div>
-    <script src="/js/index.js?v=miPr_dZeaCM4PeNb2iCfcKwSMOI5twWfEsyxMep1Pqc=&amp;pv={PROCESSOR_VERSION}" type="module"></script>
+    <script src="/js/index.js?v=miPr_dZeaCM4PeNb2iCfcKwSMOI5twWfEsyxMep1Pqc%3D&amp;pv={PROCESSOR_VERSION}" type="module"></script>
 
 
 </body></html>

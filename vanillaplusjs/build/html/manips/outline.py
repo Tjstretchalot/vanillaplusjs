@@ -7,7 +7,7 @@ import vanillaplusjs.build.html.token as tkn
 from vanillaplusjs.build.handlers.handler import Handler
 import os
 import io
-
+from urllib.parse import urlencode
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.constants import PROCESSOR_VERSION
 
@@ -174,7 +174,9 @@ class OutlineManipulator(HTMLManipulator):
                 )
                 with open(out_path + ".hash", "r") as f:
                     target_hash = f.read()
-                target_path += f"?v={target_hash}&pv={PROCESSOR_VERSION}"
+                target_path += "?" + urlencode(
+                    {"v": target_hash, "pv": PROCESSOR_VERSION}
+                )
 
             start_tag_attrs[result_tag_attr] = target_path
             if self.outlining == "style":

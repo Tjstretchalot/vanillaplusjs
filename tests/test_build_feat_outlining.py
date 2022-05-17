@@ -32,7 +32,7 @@ BASIC = {
 </head>
 <body>
     <div class="bg-white">White background</div>
-    <script src="/js/gen/index/1.js?v=miPr_dZeaCM4PeNb2iCfcKwSMOI5twWfEsyxMep1Pqc=&amp;pv={PROCESSOR_VERSION}" type="module"></script>
+    <script src="/js/gen/index/1.js?v=miPr_dZeaCM4PeNb2iCfcKwSMOI5twWfEsyxMep1Pqc%3D&amp;pv={PROCESSOR_VERSION}" type="module"></script>
 
 
 </body></html>
@@ -61,7 +61,7 @@ CSS = {
         "out/www/css/gen/index/1.css": ".bg-white { background: white; }",
         "out/www/index.html": """<!DOCTYPE html><html><head><meta charset="utf-8">
     <title>Test</title>
-    <link href="/css/gen/index/1.css?v=_cleXtat2YzX9984kaowZTnXUQ_QYm9GtSYeQ2uf4mA=&amp;pv={PROCESSOR_VERSION}" rel="stylesheet">
+    <link href="/css/gen/index/1.css?v=_cleXtat2YzX9984kaowZTnXUQ_QYm9GtSYeQ2uf4mA%3D&amp;pv={PROCESSOR_VERSION}" rel="stylesheet">
 </head>
 <body>
     <div class="bg-white">White background</div>
@@ -106,7 +106,7 @@ CSS_IS_PROCESSED = {
     """,
         "out/www/index.html": """<!DOCTYPE html><html><head><meta charset="utf-8">
     <title>Test</title>
-    <link href="/css/gen/index/1.css?v=-wFYx6uuOsc1iOGJC_8AT1c-p2I-6P9_qfbgw60rG-c=&amp;pv={PROCESSOR_VERSION}" rel="stylesheet">
+    <link href="/css/gen/index/1.css?v=-wFYx6uuOsc1iOGJC_8AT1c-p2I-6P9_qfbgw60rG-c%3D&amp;pv={PROCESSOR_VERSION}" rel="stylesheet">
 </head>
 <body>
     <div class="bg-white">White background</div>

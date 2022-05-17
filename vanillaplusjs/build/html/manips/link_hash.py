@@ -7,6 +7,7 @@ from vanillaplusjs.build.build_context import BuildContext
 import os
 from vanillaplusjs.constants import PROCESSOR_VERSION
 from dataclasses import dataclass
+from urllib.parse import urlencode
 import itertools
 import abc
 
@@ -148,7 +149,7 @@ class LinkHash(HTMLManipulator):
         new_attribute_keys = sorted(
             itertools.chain(dep.attributes.keys(), (dep.attr_name,))
         )
-        new_href = f"/{dep.path}?v={hash}&pv={PROCESSOR_VERSION}"
+        new_href = f"/{dep.path}?" + urlencode({"v": hash, "pv": PROCESSOR_VERSION})
 
         new_data = dict(
             ((None, key), dep.attributes[key])

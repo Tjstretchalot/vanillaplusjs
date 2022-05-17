@@ -5,7 +5,7 @@ from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.build.css.manipulator import CSSManipulator
 from vanillaplusjs.build.css.token import CSSToken, CSSTokenType
 import vanillaplusjs.build.handlers.hash as hash_handler
-from urllib.parse import unquote
+from urllib.parse import unquote, urlencode
 import re
 import os
 
@@ -147,7 +147,9 @@ class OutlineImageDataManipulator(CSSManipulator):
         with open(out_path + ".hash") as f:
             hash_value = f.read()
 
-        result[1]["value"] += f"?v={hash_value}&pv={PROCESSOR_VERSION}"
+        result[1]["value"] += "?" + urlencode(
+            {"v": hash_value, "pv": PROCESSOR_VERSION}
+        )
 
         return result
 
