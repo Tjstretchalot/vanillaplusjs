@@ -547,7 +547,7 @@ export const API_URL = "http://127.0.0.1:8080";
 This can be used, for example, to create an API wrapper:
 
 ```js
-import { API_URL } from '/js/modules/constants.js';
+import { API_URL } from '/js/constants.js';
 
 
 export function apiFetch(url, options) {
