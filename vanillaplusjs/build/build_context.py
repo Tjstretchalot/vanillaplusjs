@@ -1,10 +1,83 @@
 from dataclasses import dataclass
 import os
-from typing import Optional, TYPE_CHECKING
+from typing import Dict, Optional, TYPE_CHECKING
+
+from vanillaplusjs.build.file_signature import FileSignature
 
 if TYPE_CHECKING:
     from vanillaplusjs.build.css.manips.icons.settings import IconSettings
     from vanillaplusjs.build.html.manips.images.settings import ImageSettings
+
+
+@dataclass
+class ExternalFile:
+    """Describes a file which is not distributed with the source repository
+    and hence we may need to download if it does not exist.
+    """
+
+    relpath: str
+    """The path to where the file should be relative to the project root"""
+
+    url: str
+    """The URL to download the file from"""
+
+    integrity: str
+    """The expected hash of the file, in the form digest_type-value, e.g.,
+    sha384-xxx. You usually find this value in the same place you found
+    the cdn link.
+
+    For example:
+
+    <link href="https://example.com/my-file.css" rel="stylesheet" integrity="sha384-asdf" crossorigin="anonymous">
+
+    has the integrity "sha384-asdf"
+    """
+
+
+@dataclass
+class ExternalFileState:
+    """The state of a single external file that we store to avoid an
+    expensive hashing step to determine if its been changed.
+    """
+
+    relpath: str
+    """The path to the external file relative to the project root"""
+
+    integrity: str
+    """The hash of the file that we downloaded"""
+
+    signature: FileSignature
+    """The signature of the file after we downloaded it; if this changed then we
+    should double-check the integrity.
+    """
+
+    @classmethod
+    def from_json(cls, data: dict) -> "ExternalFilesState":
+        """Creates an ExternalFilesState from a JSON object"""
+        return cls(
+            relpath=data["relpath"],
+            integrity=data["integrity"],
+            signature=FileSignature.from_json(data["signature"]),
+        )
+
+
+@dataclass
+class ExternalFilesState:
+    """The state of all external files within a build context"""
+
+    state_by_relpath: Dict[str, ExternalFileState]
+    """A lookup from the relative path to the external file to its state
+    """
+
+    @classmethod
+    def from_json(cls, data: dict) -> "ExternalFilesState":
+        """Loads the typed object described in the given json object"""
+        return ExternalFilesState(
+            state_by_relpath=dict(
+                (key, ExternalFileState.from_json(value))
+                for key, value in data["state_by_relpath"].items()
+            )
+        )
 
 
 @dataclass
@@ -36,6 +109,9 @@ class BuildContext:
 
     auto_generate_images_js_placeholders: bool = True
     """If true we will generate src folder placeholder *.images.js files"""
+
+    external_files: Dict[str, ExternalFile] = None
+    """What external files are required for this project."""
 
     @property
     def src_folder(self) -> str:
@@ -85,3 +161,21 @@ class BuildContext:
         image which is used in multiple places.
         """
         return os.path.join(self.out_folder, "output_graph.json")
+
+    @property
+    def external_files_state_file(self) -> str:
+        """Returns the path to the external files state JSON file"""
+        return os.path.join(self.out_folder, "external_files_state.json")
+
+
+def load_external_files(data: Dict[str, Dict]) -> Dict[str, ExternalFile]:
+    """Loads the external files from the given data"""
+    result = dict()
+    for key, value in data.items():
+        relpath = value.get("relpath", key).replace("/", os.path.sep)
+        result[relpath] = ExternalFile(
+            relpath=relpath,
+            url=value["url"],
+            integrity=value["integrity"],
+        )
+    return result

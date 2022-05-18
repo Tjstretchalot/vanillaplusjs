@@ -149,6 +149,7 @@ def init(folder: str, host: Optional[str] = None) -> None:
                         "resolution_step": decimal.Decimal(0.5),
                     },
                     "auto_generate_images_js_placeholders": True,
+                    "external_files": {},
                 },
                 f,
                 cls=DecimalEncoder,

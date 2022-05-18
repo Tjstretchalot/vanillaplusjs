@@ -1,5 +1,9 @@
 from typing import Sequence, Set
-from vanillaplusjs.build.build_context import BuildContext
+from vanillaplusjs.build.build_context import (
+    BuildContext,
+    ExternalFile,
+    load_external_files,
+)
 from vanillaplusjs.build.css.manips.icons.settings import load_icon_settings
 from vanillaplusjs.build.file_signature import get_file_signature
 from vanillaplusjs.build.graph import FileDependencyGraph
@@ -193,6 +197,7 @@ class DevEventHandler(FileSystemEventHandler):
         context.auto_generate_images_js_placeholders = config[
             "auto_generate_images_js_placeholders"
         ]
+        context.external_files = load_external_files(config["external_files"])
 
         old_dependency_graph = FileDependencyGraph()
         old_output_graph = FileDependencyGraph()

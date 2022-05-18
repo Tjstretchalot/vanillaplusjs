@@ -22,3 +22,10 @@ class MissingConfigurationException(BuildException):
 
     def __init__(self, message: str):
         super().__init__(message)
+
+
+class IntegrityMismatchException(BuildException):
+    """Raised if an external files integrity is not as expected"""
+
+    def __init__(self, message: str):
+        super().__init__(message)

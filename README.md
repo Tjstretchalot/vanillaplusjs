@@ -339,58 +339,43 @@ You can also use the stack to define local variables:
 <p>Get it today! Just <!--[STACK: ["retrieve", "price"]]--></p>
 ```
 
-### External dependencies
+### Outlining Images
 
-Although `vanillaplusjs` is not intended for applications with a large number
-of external dependencies (and does not support NPM), it is still sometimes
-appropriate to include some. This will handle downloading the dependencies and
-caching them locally, and the dependencies will be served directly.
+If images are specified in CSS files via data URIs, they will be outlined
+in order to support the desired content security policy. This is particularly
+useful when combined with external files, since e.g., bootstrap will inline
+SVGs.
 
-We only support the single-file exports of file.
+This a performance trade-off and can cause some flashing, but this project
+prefers the security assurances of the CSP to the performance gains of inlined
+scripts and images. Note that the browser could resolve this flashing in the
+future by loading svgs referenced in stylesheets in the background after the
+page has loaded.
 
-An example of a meaningful dependency is bootstrap. Bootstrap's CSS files are
-not CSP-friendly as they contain inline SVGs. The following setting will detect
-those SVGs and seamlessly outline them to be served separately.
+### External files
+
+If you have files that are required but should not be distributed via source
+control then you can instruct vanillaplusjs to download them from a CDN prior to
+building. For example, if you want to include bootstrap 5.2.0-beta1 in your project, you
+would update the `external_files` section of `vanillaplusjs.json` as follows:
 
 ```json
 {
-    "dependencies": {
-        "js": {
-            "bootstrap": {
-                "url": "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js",
-                "integrity": "sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-            }
+    "external_files": {
+        "src/public/css/lib/bootstrap.min.css": {
+            "url": "https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css",
+            "integrity": "sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
         },
-        "css": {
-            "bootstrap": {
-                "url": "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css",
-                "integrity": "sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3",
-                "clean_data_src": true
-            }
+        "src/public/js/lib/bootstrap.min.js": {
+            "url": "https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js",
+            "integrity": "sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
         }
     }
 }
 ```
 
-The files can be imported as follows:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bootstrap</title>
-    <!--[IMPORT css bootstrap]-->
-</head>
-<body>
-    <div class="container my-5">
-        <h1>Bootstrap</h1>
-        <p>This is a bootstrap page</p>
-    </div>
-
-    <!--[IMPORT js bootstrap]-->
-</body>
-</html>
-```
+Note that to update dependencies you must do a cold build (`vanillaplusjs build`) as they will not
+be updated during a hot build (`vanillaplusjs dev --watch`)
 
 ### Canonical URLs
 

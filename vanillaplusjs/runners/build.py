@@ -4,7 +4,11 @@ from loguru import logger
 import os
 import sys
 import json
-from vanillaplusjs.build.build_context import BuildContext
+from vanillaplusjs.build.build_context import (
+    BuildContext,
+    ExternalFile,
+    load_external_files,
+)
 from vanillaplusjs.build.cold_incremental_rebuild import cold_incremental_rebuild
 from vanillaplusjs.build.css.manips.icons.settings import load_icon_settings
 from vanillaplusjs.build.html.manips.images.settings import load_image_settings
@@ -89,6 +93,7 @@ def build(folder: str, dev: bool) -> None:
     context.auto_generate_images_js_placeholders = config[
         "auto_generate_images_js_placeholders"
     ]
+    context.external_files = load_external_files(config["external_files"])
 
     old_dependency_graph = FileDependencyGraph()
     # In this graph, all the files in the graph are input files, and input

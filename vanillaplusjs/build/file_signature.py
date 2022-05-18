@@ -21,6 +21,15 @@ class FileSignature:
     support inodes, this will be 0.
     """
 
+    @classmethod
+    def from_json(cls, data) -> "FileSignature":
+        """Get the FileSignature stored in the json object"""
+        return cls(
+            mtime=data["mtime"],
+            filesize=data["filesize"],
+            inode=data["inode"],
+        )
+
 
 def get_file_signature(file: str) -> FileSignature:
     """Gets the file signature for the given file.
