@@ -150,6 +150,12 @@ def init(folder: str, host: Optional[str] = None) -> None:
                     },
                     "auto_generate_images_js_placeholders": True,
                     "external_files": {},
+                    "js_constants": {
+                        "relpath": "src/public/js/constants.js",
+                        "shared": {},
+                        "dev": {"API_URL": "http://127.0.0.1:8080"},
+                        "prod": {"API_URL": ""},
+                    },
                 },
                 f,
                 cls=DecimalEncoder,

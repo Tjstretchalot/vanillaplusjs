@@ -84,10 +84,6 @@ async def cold_incremental_rebuild(
             else:
                 relpaths_added[relpath] = signature
 
-    if not relpaths_deleted and not relpaths_changed and not relpaths_added:
-        logger.info("No changes detected, nothing to do.")
-        return
-
     logger.info(
         "Cold start incremental build detected {} changed files, {} added files, and {} deleted files",
         len(relpaths_changed),

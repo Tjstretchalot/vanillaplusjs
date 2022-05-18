@@ -8,6 +8,7 @@ from vanillaplusjs.build.build_context import (
     BuildContext,
     ExternalFile,
     load_external_files,
+    load_js_constants,
 )
 from vanillaplusjs.build.cold_incremental_rebuild import cold_incremental_rebuild
 from vanillaplusjs.build.css.manips.icons.settings import load_icon_settings
@@ -94,6 +95,7 @@ def build(folder: str, dev: bool) -> None:
         "auto_generate_images_js_placeholders"
     ]
     context.external_files = load_external_files(config["external_files"])
+    context.js_constants = load_js_constants(config["js_constants"])
 
     old_dependency_graph = FileDependencyGraph()
     # In this graph, all the files in the graph are input files, and input

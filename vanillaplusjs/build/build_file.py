@@ -4,6 +4,7 @@ import vanillaplusjs.build.handlers.copy_and_hash
 import vanillaplusjs.build.handlers.html
 import vanillaplusjs.build.handlers.css
 import vanillaplusjs.build.handlers.js
+import vanillaplusjs.build.handlers.js_constants
 import vanillaplusjs.build.handlers.image_glue
 
 
@@ -25,6 +26,10 @@ def build_file(build_context: "BuildContext", relpath: str) -> BuildFileResult:
     Returns:
         BuildFileResult: If the file is built successfully
     """
+    if relpath == build_context.js_constants.relpath:
+        return vanillaplusjs.build.handlers.js_constants.build_file(
+            build_context, relpath
+        )
     if vanillaplusjs.build.handlers.image_glue.handles_file(build_context, relpath):
         return vanillaplusjs.build.handlers.image_glue.build_file(
             build_context, relpath

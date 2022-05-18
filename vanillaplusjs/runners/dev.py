@@ -3,6 +3,7 @@ from vanillaplusjs.build.build_context import (
     BuildContext,
     ExternalFile,
     load_external_files,
+    load_js_constants,
 )
 from vanillaplusjs.build.css.manips.icons.settings import load_icon_settings
 from vanillaplusjs.build.file_signature import get_file_signature
@@ -198,6 +199,7 @@ class DevEventHandler(FileSystemEventHandler):
             "auto_generate_images_js_placeholders"
         ]
         context.external_files = load_external_files(config["external_files"])
+        context.js_constants = load_js_constants(config["js_constants"])
 
         old_dependency_graph = FileDependencyGraph()
         old_output_graph = FileDependencyGraph()

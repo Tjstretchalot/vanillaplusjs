@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import os
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import Dict, Optional, TYPE_CHECKING, Union
 
 from vanillaplusjs.build.file_signature import FileSignature
 
@@ -81,6 +81,29 @@ class ExternalFilesState:
 
 
 @dataclass
+class JSConstants:
+    """The javascript constants to export"""
+
+    relpath: str
+    """The path to the constants file relative to the project root. If
+    this file does not exist, the constants file will not be produced.
+    The contents of this file are ignored, but it's recommended that the
+    constants be documented here.
+    """
+
+    shared: Dict[str, Union[str, int, float]]
+    """The constants which are shared between modes. If a key is both in a shared
+    dict and a particular mode, the value from the particular mode will be used.
+    """
+
+    dev: Dict[str, Union[str, int, float]]
+    """The constants in development mode"""
+
+    prod: Dict[str, Union[str, int, float]]
+    """The constants in production mode"""
+
+
+@dataclass
 class BuildContext:
     """Available configuration options when building which may be referenced
     by the file build functionality.
@@ -112,6 +135,9 @@ class BuildContext:
 
     external_files: Dict[str, ExternalFile] = None
     """What external files are required for this project."""
+
+    js_constants: JSConstants = None
+    """The javascript constants based on the current build environment"""
 
     @property
     def src_folder(self) -> str:
@@ -179,3 +205,13 @@ def load_external_files(data: Dict[str, Dict]) -> Dict[str, ExternalFile]:
             integrity=value["integrity"],
         )
     return result
+
+
+def load_js_constants(data: dict) -> JSConstants:
+    """Loads the js constants from the given data"""
+    return JSConstants(
+        relpath=data["relpath"].replace("/", os.path.sep),
+        shared=data["shared"],
+        dev=data["dev"],
+        prod=data["prod"],
+    )

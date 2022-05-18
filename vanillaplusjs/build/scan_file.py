@@ -3,6 +3,7 @@ import vanillaplusjs.build.handlers.copy_and_hash
 import vanillaplusjs.build.handlers.html
 import vanillaplusjs.build.handlers.css
 import vanillaplusjs.build.handlers.js
+import vanillaplusjs.build.handlers.js_constants
 import vanillaplusjs.build.handlers.image_glue
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 
@@ -24,6 +25,8 @@ def scan_file(context: "BuildContext", relpath: str) -> ScanFileResult:
     Returns:
         ScanFileResult: What the file depends on and what it will produce
     """
+    if relpath == context.js_constants.relpath:
+        return vanillaplusjs.build.handlers.js_constants.scan_file(context, relpath)
     if vanillaplusjs.build.handlers.image_glue.handles_file(context, relpath):
         return vanillaplusjs.build.handlers.image_glue.scan_file(context, relpath)
     if relpath.endswith(".html"):

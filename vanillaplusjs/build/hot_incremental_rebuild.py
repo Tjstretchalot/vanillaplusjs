@@ -1,4 +1,4 @@
-from typing import Dict, List, Set
+from typing import Dict, List, Literal, Set
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.build_file import build_file
@@ -76,6 +76,43 @@ async def hot_incremental_rebuild(
         len(deleted_files),
         context.folder,
     )
+
+    if os.path.exists(os.path.join(context.folder, context.js_constants.relpath)):
+        current_mode: Literal["dev", "prod"] = "dev" if context.dev else "prod"
+        old_constants_mode = None
+        try:
+            with open(
+                os.path.join(context.out_folder, "js_constants_mode.txt"), "r"
+            ) as f:
+                old_constants_mode = f.read()
+        except FileNotFoundError:
+            pass
+
+        if old_constants_mode != current_mode:
+            if (context.js_constants.relpath not in changed_files) and (
+                context.js_constants.relpath not in added_files
+            ):
+                logger.debug(
+                    f"Marking {context.js_constants.relpath} changed due to new mode {current_mode} (was {old_constants_mode})"
+                )
+                changed_files[context.js_constants.relpath] = get_file_signature(
+                    os.path.join(context.folder, context.js_constants.relpath)
+                )
+
+            os.makedirs(context.out_folder, exist_ok=True)
+            with open(
+                os.path.join(context.out_folder, "js_constants_mode.txt"), "w"
+            ) as f:
+                f.write(current_mode)
+    else:
+        try:
+            os.unlink(os.path.join(context.out_folder, "js_constants_mode.txt"))
+        except FileNotFoundError:
+            pass
+
+    if not changed_files and not added_files and not deleted_files:
+        logger.info("Nothing to do, exiting")
+        return
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         files_that_need_scanning = list(changed_files.keys()) + list(added_files.keys())

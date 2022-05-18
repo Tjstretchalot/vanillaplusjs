@@ -515,19 +515,36 @@ large primary-dark file would be at
 
 ### Constants
 
-This will generate `out/www/js/modules/constants.js` which contains, in particular,
-the following constants:
+Editable in the `vanillaplusjs.json` file, you can specify a file that acts as the
+constants file. For example,
 
-
-```js
-export const API_URL = '';
+```json
+{
+    "js_constants": {
+        "relpath": "src/public/js/constants.js",
+        "shared": {},
+        "dev": {"API_URL": "http://127.0.0.1:8080"},
+        "prod": {"API_URL": ""},
+    }
+}
 ```
 
-In development mode, this will be set by default to `http://127.0.0.1:8080`, whereas in
-production mode it will be left empty by default. It's recommended you use a fetch
-wrapper which prefixes the API_URL for relative urls for you; the basic idea is as
-simple as
+Then, if you create the file at the corresponding path, in this case,
+`src/public/js/constants.js`, the contents of that file will be ignored and the
+outputted file will depend on the build environment. In production mode,
+`vanillaplusjs build`, the file at `out/www/js/constants.js` will be
 
+```js
+export const API_URL = "";
+```
+
+In development mode, `vanillaplusjs build --dev`, it will instead be
+
+```js
+export const API_URL = "http://127.0.0.1:8080";
+```
+
+This can be used, for example, to create an API wrapper:
 
 ```js
 import { API_URL } from '/js/modules/constants.js';
@@ -541,6 +558,9 @@ export function apiFetch(url, options) {
     return fetch(url, options);
 }
 ```
+
+Which will allow you to run the backend server on a different port
+locally, but in production mode, it will use the same port as the frontend.
 
 ## Contributing
 
