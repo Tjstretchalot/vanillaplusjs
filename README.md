@@ -142,9 +142,9 @@ folder is byte-for-byte reproducible, thus it can be easily included in your
 repository, and then just downloaded by your CI/CD pipeline rather than
 regenerated from scratch.
 
-The `artifacts/` folder will contain more images than are ultimately served via
-the `out/www` folder. Our image processor is deterministic, but it does need to
-sample different compression levels to find the best one for a given image.
+The image processor is deterministic, but it does need to sample different
+compression levels to find the best one for a given image. The trade-off
+for compression vs accuracy is configurable in `vanillaplusjs.json`.
 
 Our image processing will also handling cropping an image using a `cover-fit`
 algorithm. In the most basic case, to render a 375x370 image, it would look
