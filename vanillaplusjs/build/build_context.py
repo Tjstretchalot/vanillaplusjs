@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import os
-from typing import Dict, Optional, TYPE_CHECKING, Union
+from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 from vanillaplusjs.build.file_signature import FileSignature
 
@@ -138,6 +138,11 @@ class BuildContext:
 
     js_constants: JSConstants = None
     """The javascript constants based on the current build environment"""
+
+    delay_files: List[str] = None
+    """Files which, for debugging reasons, we should ensure processing lasts
+    at least a few seconds.
+    """
 
     @property
     def src_folder(self) -> str:

@@ -5,6 +5,7 @@ import os
 import shutil
 import vanillaplusjs.runners.init
 import vanillaplusjs.runners.build
+import vanillaplusjs.build.build_file
 from vanillaplusjs.constants import PROCESSOR_VERSION
 
 
@@ -70,3 +71,30 @@ class Test(unittest.TestCase):
 
     def test_basic(self):
         self._basic_test(BASIC["orig"], BASIC["conv"])
+
+    @unittest.skip("slow")
+    def test_regression_queues_index_before_main(self):
+        orig = BASIC["orig"]
+        conv = BASIC["conv"]
+        os.makedirs(os.path.join("tmp"), exist_ok=True)
+        try:
+            vanillaplusjs.runners.init.main(["--folder", "tmp"])
+            for path, val in orig.items():
+                os.makedirs(os.path.dirname(os.path.join("tmp", path)), exist_ok=True)
+                with open(os.path.join("tmp", path), "w") as f:
+                    f.write(val)
+
+            vanillaplusjs.runners.build.main(
+                [
+                    "--folder",
+                    "tmp",
+                    "--delay-files",
+                    os.path.join("src", "public", "css", "main.css"),
+                ]
+            )
+
+            for path, val in conv.items():
+                with open(os.path.join("tmp", path), "r") as f:
+                    self.assertEqual(f.read(), val, path)
+        finally:
+            shutil.rmtree("tmp")

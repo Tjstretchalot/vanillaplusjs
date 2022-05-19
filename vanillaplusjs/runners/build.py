@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import List, Optional, Sequence
 import argparse
 from loguru import logger
 import os
@@ -43,16 +43,31 @@ def main(args: Sequence[str]):
             "files are in artifacts."
         ),
     )
+    argparser.add_argument(
+        "--delay-files",
+        type=str,
+        nargs="+",
+        help=(
+            "This is primarily for debugging. When the given files are "
+            "encountered during building, we will delay their processing "
+            "a few seconds. This is useful for testing if the build is "
+            "time sensitive"
+        ),
+    )
     args = argparser.parse_args(args)
     symlinks = None
     if args.symlinks:
         symlinks = True
     elif args.no_symlinks:
         symlinks = False
-    build(args.folder, dev=args.dev, symlinks=symlinks)
+    build(
+        args.folder, dev=args.dev, symlinks=symlinks, delay_files=args.delay_files or []
+    )
 
 
-def build(folder: str, dev: bool, symlinks: Optional[bool]) -> None:
+def build(
+    folder: str, dev: bool, symlinks: Optional[bool], delay_files: List[str]
+) -> None:
     """Builds the static files within the given folder. The folder should
     follow the following structure:
 
@@ -77,6 +92,8 @@ def build(folder: str, dev: bool, symlinks: Optional[bool]) -> None:
         dev (bool): Whether to build for development or not
         symlinks (bool, None): If None, we auto-detect symlink support. Otherwise,
             we use the given value.
+        delay_files (List[str]): A list of files to delay processing. This is
+            primarily for debugging.
     """
     if symlinks is None:
         symlinks = detect_symlink_support()
@@ -108,6 +125,7 @@ def build(folder: str, dev: bool, symlinks: Optional[bool]) -> None:
     ]
     context.external_files = load_external_files(config["external_files"])
     context.js_constants = load_js_constants(config["js_constants"])
+    context.delay_files = delay_files
 
     old_dependency_graph = FileDependencyGraph()
     # In this graph, all the files in the graph are input files, and input

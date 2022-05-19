@@ -6,6 +6,7 @@ import vanillaplusjs.build.handlers.css
 import vanillaplusjs.build.handlers.js
 import vanillaplusjs.build.handlers.js_constants
 import vanillaplusjs.build.handlers.image_glue
+import time
 
 
 def build_file(build_context: "BuildContext", relpath: str) -> BuildFileResult:
@@ -26,6 +27,9 @@ def build_file(build_context: "BuildContext", relpath: str) -> BuildFileResult:
     Returns:
         BuildFileResult: If the file is built successfully
     """
+    if relpath in build_context.delay_files:
+        time.sleep(3)
+
     if relpath == build_context.js_constants.relpath:
         return vanillaplusjs.build.handlers.js_constants.build_file(
             build_context, relpath

@@ -200,6 +200,7 @@ class DevEventHandler(FileSystemEventHandler):
         ]
         context.external_files = load_external_files(config["external_files"])
         context.js_constants = load_js_constants(config["js_constants"])
+        context.delay_files = []
 
         old_dependency_graph = FileDependencyGraph()
         old_output_graph = FileDependencyGraph()

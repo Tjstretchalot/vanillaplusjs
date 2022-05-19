@@ -182,6 +182,7 @@ async def hot_incremental_rebuild(
         files_to_rebuild = [
             file for file in files_to_rebuild if file not in deleted_files
         ]
+        original_files_to_rebuild = frozenset(files_to_rebuild)
 
         logger.debug("{} files to rebuild", len(files_to_rebuild))
         logger.debug("{} files to clean", len(dirtied_outputs))
@@ -224,7 +225,10 @@ async def hot_incremental_rebuild(
 
                 all_dependencies_built = True
                 for child in file_depends_on:
-                    if child not in updated_results and child in files_to_rebuild:
+                    if (
+                        child not in updated_results
+                        and child in original_files_to_rebuild
+                    ):
                         logger.debug(
                             "Cannot rebuild {} until we have rebuilt {}",
                             file,
