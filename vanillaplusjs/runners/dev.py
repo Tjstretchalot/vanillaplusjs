@@ -117,7 +117,7 @@ def dev(folder: str, host: str, port: int, watch: bool, debounce: int) -> None:
         )
         observer = Observer()
         observer.schedule(
-            event_handler, os.path.join(abs_folder, "src", "public"), recursive=True
+            event_handler, os.path.join(abs_folder, "src"), recursive=True
         )
         observer.daemon = True
         observer.start()
