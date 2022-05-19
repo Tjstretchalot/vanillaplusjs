@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence
 import argparse
 from loguru import logger
 import os
@@ -27,6 +27,12 @@ def main(args: Sequence[str]):
         "--dev", action="store_true", help="Build for development specifically"
     )
     argparser.add_argument(
+        "--symlinks", action="store_true", help="Force the use of symlinks"
+    )
+    argparser.add_argument(
+        "--no-symlinks", action="store_true", help="Prevent the use of symlinks"
+    )
+    argparser.add_argument(
         "--folder",
         type=str,
         default=".",
@@ -38,13 +44,15 @@ def main(args: Sequence[str]):
         ),
     )
     args = argparser.parse_args(args)
-    build(
-        args.folder,
-        dev=args.dev,
-    )
+    symlinks = None
+    if args.symlinks:
+        symlinks = True
+    elif args.no_symlinks:
+        symlinks = False
+    build(args.folder, dev=args.dev, symlinks=symlinks)
 
 
-def build(folder: str, dev: bool) -> None:
+def build(folder: str, dev: bool, symlinks: Optional[bool]) -> None:
     """Builds the static files within the given folder. The folder should
     follow the following structure:
 
@@ -67,8 +75,12 @@ def build(folder: str, dev: bool) -> None:
     Args:
         folder (str): The folder to build
         dev (bool): Whether to build for development or not
+        symlinks (bool, None): If None, we auto-detect symlink support. Otherwise,
+            we use the given value.
     """
-    context = BuildContext(folder, dev=dev, symlinks=detect_symlink_support())
+    if symlinks is None:
+        symlinks = detect_symlink_support()
+    context = BuildContext(folder, dev=dev, symlinks=symlinks)
     if not os.path.exists(context.config_file):
         print("Run vanillaplusjs init first")
         sys.exit(1)
