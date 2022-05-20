@@ -1,15 +1,31 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.exceptions import MissingConfigurationException
 from vanillaplusjs.build.html.manipulator import HTMLManipulator
 import vanillaplusjs.build.html.token as tkn
 from vanillaplusjs.build.build_context import BuildContext
 import os
-
+from dataclasses import dataclass
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 
 
 PUBLIC_PREFIX_LENGTH = len(os.path.join("src", "public")) + len(os.path.sep)
+
+
+@dataclass
+class TagToReplace:
+    """Describes a tag with an attribute which functions like the href in a
+    link rel canonical tag.
+    """
+
+    name: str
+    """The name of the tag"""
+
+    attr: str
+    """The name of the attribute which functions like href"""
+
+    other_tags: Dict[str, str]
+    """A dictionary of other tags which should be included in the tag"""
 
 
 class LinkRelCanonicalManipulator(HTMLManipulator):
@@ -27,6 +43,8 @@ class LinkRelCanonicalManipulator(HTMLManipulator):
     ```
     <link href="https://example.com/index.html" rel="canonical">
     ```
+
+    This functions identically for meta tags with property="og:url"
     """
 
     def __init__(
@@ -37,23 +55,9 @@ class LinkRelCanonicalManipulator(HTMLManipulator):
         self.mode = mode
 
     def start_mark(self, node: tkn.HTMLToken) -> bool:
-        if node["type"] != "EmptyTag":
-            return False
-
-        if node["name"] != "link":
-            return False
-
-        attributes = node["data"]
-        if (None, "rel") not in attributes:
-            return False
-
-        rel = attributes[(None, "rel")]
-        if rel != "canonical":
-            return False
-
-        href = attributes.get((None, "href"))
-        if href is not None and href != "" and not href.startswith("/"):
-            return False
+        tag = self.try_get_tag(node)
+        if tag is None:
+            return
 
         if self.mode == "scan":
             if self.context.host is None:
@@ -66,8 +70,9 @@ class LinkRelCanonicalManipulator(HTMLManipulator):
 
     def continue_mark(self, node: tkn.HTMLToken) -> Optional[List[tkn.HTMLToken]]:
         host = self.context.host
-        href = node["data"].get((None, "href"))
+        tag = self.try_get_tag(node)
 
+        href = node["data"].get((None, tag.attr))
         new_href = None
         if href is None:
             path_relative_to_public = self.relpath[PUBLIC_PREFIX_LENGTH:]
@@ -76,8 +81,51 @@ class LinkRelCanonicalManipulator(HTMLManipulator):
         else:
             new_href = f"https://{host}{href}"
 
-        new_node = tkn.empty_tag("link", {"href": new_href, "rel": "canonical"})
+        new_tags = tag.other_tags.copy()
+        new_tags[tag.attr] = new_href
+        new_tags = dict((k, new_tags[k]) for k in sorted(new_tags.keys()))
+        new_node = tkn.empty_tag(tag.name, new_tags)
         return [new_node]
+
+    def try_get_tag(self, node: tkn.HTMLToken) -> Optional[TagToReplace]:
+        tag = self.try_get_tag_inner(node)
+        if tag is None:
+            return None
+
+        href = node["data"].get((None, tag.attr))
+        if href is not None and href.startswith("http"):
+            return None
+
+        tag.other_tags = dict(
+            (key, value) for (_, key), value in node["data"].items() if key != tag.attr
+        )
+        return tag
+
+    def try_get_tag_inner(self, node: tkn.HTMLToken) -> Optional[TagToReplace]:
+        if node["type"] != "EmptyTag":
+            return None
+
+        if node["name"] == "link":
+            rel = node["data"].get((None, "rel"))
+            if rel == "canonical":
+                return TagToReplace(
+                    name="link",
+                    attr="href",
+                    other_tags=None,
+                )
+            return None
+
+        if node["name"] == "meta":
+            property = node["data"].get((None, "property"))
+            if property == "og:url":
+                return TagToReplace(
+                    name="meta",
+                    attr="content",
+                    other_tags=None,
+                )
+            return None
+
+        return None
 
     def scan_result(self) -> ScanFileResult:
         """The scan result for this manipulator is always empty."""

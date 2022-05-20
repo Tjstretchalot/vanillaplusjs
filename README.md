@@ -412,6 +412,8 @@ becomes
 <link href="https://example.com/" rel="canonical">
 ```
 
+This functions identically for the meta property `og:url`
+
 ### CSS Nesting
 
 CSS without nesting can quickly be painful if you want to support the main
