@@ -87,7 +87,7 @@ def dev(folder: str, host: str, port: int, watch: bool, debounce: int) -> None:
         )
         sys.exit(1)
 
-    build(folder=folder, dev=True)
+    build(folder=folder, dev=True, symlinks=None, delay_files=[])
     if not watch:
         return run_server(folder=folder, host=host, port=port)
 
