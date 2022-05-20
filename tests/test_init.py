@@ -48,9 +48,7 @@ class Test(unittest.TestCase):
             vanillaplusjs.runners.init.main(["--folder", "tmp"])
             self.assertTrue(os.path.exists(os.path.join("tmp", "src", "public", "img")))
             self.assertTrue(os.path.exists(os.path.join("tmp", "src", "public", "js")))
-            self.assertTrue(
-                os.path.exists(os.path.join("tmp", "src", "public", "partials"))
-            )
+            self.assertTrue(os.path.exists(os.path.join("tmp", "src", "partials")))
         finally:
             shutil.rmtree("tmp")
 
