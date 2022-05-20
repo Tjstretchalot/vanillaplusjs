@@ -1,5 +1,4 @@
 import io
-from tkinter import E
 from typing import Generator
 from .token import HTMLToken
 import html5lib
