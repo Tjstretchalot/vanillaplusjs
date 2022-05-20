@@ -5,5 +5,5 @@ CONFIGURATION_VERSION = "1.0.0"
 automatically migrate old configuration files.
 """
 
-PROCESSOR_VERSION = "0.1.6"
+PROCESSOR_VERSION = "0.1.7"
 """The version of vanillaplusjs we're using"""
