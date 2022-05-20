@@ -1,7 +1,6 @@
 from typing import Sequence, Set
 from vanillaplusjs.build.build_context import (
     BuildContext,
-    ExternalFile,
     load_external_files,
     load_js_constants,
 )
@@ -21,7 +20,7 @@ from watchdog.events import (
     FileDeletedEvent,
     FileCreatedEvent,
 )
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from vanillaplusjs.http_server import host_static_files_with_event
 import os
 from loguru import logger
 import sys
@@ -96,15 +95,21 @@ def dev(folder: str, host: str, port: int, watch: bool, debounce: int) -> None:
     os.chdir(os.path.join(folder, "out", "www"))
     try:
         logger.info(f"Running server on {host}:{port}")
-        server = HTTPServer((host, port), SimpleHTTPRequestHandler)
+        shutdown_event = threading.Event()
 
         def handler(signal, frame):
             logger.info("Shutting down server...")
-            server.shutdown()
+            shutdown_event.set()
 
         signal.signal(signal.SIGINT, handler)
         server_thread = threading.Thread(
-            target=server.serve_forever, kwargs={"poll_interval": 0.1}
+            target=host_static_files_with_event,
+            kwargs={
+                "folder": ".",
+                "host": host,
+                "port": port,
+                "event": shutdown_event,
+            },
         )
         server_thread.daemon = True
         server_thread.start()
@@ -127,7 +132,7 @@ def dev(folder: str, host: str, port: int, watch: bool, debounce: int) -> None:
                 break
             if not observer.is_alive():
                 logger.warning("Observer stopped unexpectedly. Shutting down server...")
-                server.shutdown()
+                shutdown_event.set()
                 break
             event_handler.rebuild_if_appropriate()
         logger.info("Server stopped")

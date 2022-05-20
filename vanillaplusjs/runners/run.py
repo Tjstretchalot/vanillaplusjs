@@ -1,6 +1,6 @@
 from typing import Sequence
 import argparse
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from vanillaplusjs.http_server import host_static_files_with_event
 import os
 from loguru import logger
 import signal
@@ -45,21 +45,27 @@ def run_server(host: str, port: int, folder: str) -> None:
     os.chdir(os.path.join(folder, "out", "www"))
     try:
         logger.info(f"Running server on {host}:{port}")
-        server = HTTPServer((host, port), SimpleHTTPRequestHandler)
+        shutdown_event = threading.Event()
 
         def handler(signal, frame):
             logger.info("Shutting down server...")
-            server.shutdown()
+            shutdown_event.set()
 
         signal.signal(signal.SIGINT, handler)
-        thread = threading.Thread(
-            target=server.serve_forever, kwargs={"poll_interval": 0.1}
+        server_thread = threading.Thread(
+            target=host_static_files_with_event,
+            kwargs={
+                "folder": ".",
+                "host": host,
+                "port": port,
+                "event": shutdown_event,
+            },
         )
-        thread.daemon = True
-        thread.start()
+        server_thread.daemon = True
+        server_thread.start()
         while True:
             time.sleep(0.1)
-            if not thread.is_alive():
+            if not server_thread.is_alive():
                 break
         logger.info("Server stopped")
     finally:
