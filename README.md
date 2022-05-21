@@ -1,6 +1,6 @@
 # Vanilla Plus JS
 
-[https://tjstretchalot.github.io/vanillaplusjs-docs](https://tjstretchalot.github.io/vanillaplusjs-docs)
+[https://vanillaplusjs.com/](https://vanillaplusjs.com/)
 
 This is a framework for building web frontends which are as faithful to vanilla
 html/css/js as possible without forcing the developer to sacrifice significant
