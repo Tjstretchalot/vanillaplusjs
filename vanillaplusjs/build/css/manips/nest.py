@@ -497,7 +497,7 @@ class NestManipulator(CSSManipulator):
                         nest_level -= 1
                 continue
 
-            if token["type"] == CSSTokenType.whitespace:
+            if token["type"] in (CSSTokenType.whitespace, CSSTokenType.comment):
                 continue
 
             prelude: List[CSSToken] = [token]
@@ -505,7 +505,19 @@ class NestManipulator(CSSManipulator):
             while True:
                 token = next(generator)
                 if token["type"] == CSSTokenType.eof:
-                    raise ValueError(f"{imp=}")
+                    raise ValueError(
+                        f"Encountered EOF before finding the qualified rule for {imp.prelude} "
+                        f"in {imp.relpath}. I was expecting to find a token within a "
+                        f"prelude; my current prelude is {prelude=}. The rules that have been "
+                        "resolved in this file so far are "
+                        + repr(
+                            list(
+                                r
+                                for r in self.referencable_rules.available_rules
+                                if r.relpath == self.relpath
+                            )
+                        )
+                    )
                 if token["type"] == CSSTokenType.left_curly_bracket:
                     break
                 prelude.append(token)

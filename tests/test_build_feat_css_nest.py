@@ -115,9 +115,52 @@ MULTI_B_CONV = """
 }
 """
 
+REPEATED_ORIG = """
+/* #region TYPOGRAPHY */
+.serif {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.text-h1 {
+    /*! PREPROCESSOR: import .serif */
+    font-size: 2.5rem;
+    line-height: 1.2;
+}
+
+.text-h2 {
+    /*! PREPROCESSOR: import .serif */
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+/* #endregion */
+"""
+
+REPEATED_CONV = """
+/* #region TYPOGRAPHY */
+.serif {
+    font-family: "Times New Roman", Times, serif;
+}
+
+.text-h1 {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 2.5rem;
+    line-height: 1.2;
+}
+
+.text-h2 {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+/* #endregion */
+"""
+
 
 class Test(unittest.TestCase):
     def _basic_test(self, orig: Dict[str, str], conv: Dict[str, str]):
+        self.maxDiff = None
         os.makedirs(os.path.join("tmp"), exist_ok=True)
         try:
             vanillaplusjs.runners.init.main(["--folder", "tmp"])
@@ -217,6 +260,26 @@ class Test(unittest.TestCase):
                     (
                         os.path.join("out", "www", "css", "b.css"),
                         MULTI_B_CONV,
+                    ),
+                )
+            ),
+        )
+
+    def test_repeated(self):
+        self._basic_test(
+            dict(
+                (
+                    (
+                        os.path.join("src", "public", "css", "main.css"),
+                        REPEATED_ORIG,
+                    ),
+                )
+            ),
+            dict(
+                (
+                    (
+                        os.path.join("out", "www", "css", "main.css"),
+                        REPEATED_CONV,
                     ),
                 )
             ),
