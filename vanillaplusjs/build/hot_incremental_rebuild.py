@@ -169,7 +169,7 @@ async def hot_incremental_rebuild(
             if file in old_dependency_graph:
                 for par in old_dependency_graph.get_parents(file):
                     if par not in files_to_rebuild:
-                        files_to_rebuild.add(file)
+                        files_to_rebuild.add(par)
                         stack.append(par)
 
             if file in old_output_graph:
