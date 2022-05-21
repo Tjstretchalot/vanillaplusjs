@@ -8,6 +8,18 @@ from starlette.applications import Starlette
 from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
 import time
+import mimetypes
+
+mimetypes.init()
+mimetypes.add_type("text/css", ".css")
+mimetypes.add_type("text/javascript", ".js")
+mimetypes.add_type("text/html", ".html")
+mimetypes.add_type("image/svg+xml", ".svg")
+mimetypes.add_type("image/jpeg", ".jpg")
+mimetypes.add_type("image/jpeg", ".jpeg")
+mimetypes.add_type("image/png", ".png")
+mimetypes.add_type("image/gif", ".gif")
+mimetypes.add_type("image/webp", ".webp")
 
 
 @contextlib.contextmanager
