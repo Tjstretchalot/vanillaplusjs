@@ -28,8 +28,8 @@ src/
             (particularly large non-image files go here)
         js/
             (all your js files go here or in subfolders)
-        partials/
-            (html templates go here)
+    partials/
+        (html templates go here)
 out/
     (overwritten by vanillaplusjs)
     www/
