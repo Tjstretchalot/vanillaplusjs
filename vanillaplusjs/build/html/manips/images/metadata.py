@@ -252,10 +252,16 @@ def get_target(
     if not os.path.exists(art_path):
         return None
 
-    if os.path.exists(os.path.join(context.out_folder, relpath + ".hash")):
-        with open(os.path.join(context.out_folder, relpath + ".hash"), "r") as f:
+    precomputed_hash_path = os.path.join(context.out_folder, "www", relpath + ".hash")
+    try:
+        with open(precomputed_hash_path, "r") as f:
             contents_hash = f.read()
-    else:
+    except FileNotFoundError:
+        logger.debug(
+            "No precomputed hash available for {} (expected at {}), calculating on demand",
+            os.path.join(context.public_folder, relpath),
+            precomputed_hash_path,
+        )
         contents_hash = calculate_hash(os.path.join(context.public_folder, relpath))
 
     target_as_dict = dataclasses.asdict(target)
