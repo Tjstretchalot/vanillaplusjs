@@ -138,6 +138,9 @@ def export_command(
                         )
 
         if we_are_first:
+            os.makedirs(
+                os.path.dirname(os.path.join(context.folder, lock_file)), exist_ok=True
+            )
             Path(os.path.join(context.folder, lock_file)).touch()
             produced.append(lock_file)
         else:

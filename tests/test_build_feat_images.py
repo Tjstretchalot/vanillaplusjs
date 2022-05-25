@@ -190,6 +190,8 @@ class Test(unittest.TestCase):
             vanillaplusjs.runners.build.main(["--folder", "tmp"])
             Path(os.path.join("tmp", "src", "public", "index.html")).touch()
             vanillaplusjs.runners.build.main(["--folder", "tmp"])
+            shutil.rmtree(os.path.join("tmp", "out"))
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
 
     def test_stable_image_settings_hash(self):
         os.makedirs(os.path.join("tmp", "src", "public", "img"))
