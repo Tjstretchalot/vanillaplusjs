@@ -39,7 +39,7 @@ Image.MAX_IMAGE_PIXELS = 1_000_000_000
 def export_command(
     context: BuildContext, command_file_path: str, command: ImageCommand
 ) -> Tuple[ImageMetadata, BuildFileResult]:
-    """Ensures that all the reuqired files are produced for the given command,
+    """Ensures that all the required files are produced for the given command,
     and returns the information surrounding what we needed and what we did.
 
     Args:
@@ -94,7 +94,9 @@ def export_command(
         reserve_target_lock_path(context, path_relative_to_public), context.folder
     )
     if os.path.exists(
-        os.path.join(target_art_folder_relative_to_root, "metadata.json")
+        os.path.join(
+            context.folder, target_art_folder_relative_to_root, "metadata.json"
+        )
     ):
         reused.append(os.path.join(target_art_folder_relative_to_root, "metadata.json"))
         reused.append(os.path.join(source_art_folder_relative_to_root, "counter.txt"))
@@ -102,7 +104,9 @@ def export_command(
             os.path.join(target_art_folder_relative_to_root, "placeholder.json")
         )
         with open(
-            os.path.join(target_art_folder_relative_to_root, "metadata.json")
+            os.path.join(
+                context.folder, target_art_folder_relative_to_root, "metadata.json"
+            )
         ) as f:
             metadata_dict = json.load(f)
         metadata = load_metadata(metadata_dict)
@@ -112,7 +116,7 @@ def export_command(
             for output in output_list:
                 reused.append(os.path.join("artifacts", output.relpath))
                 out_file = os.path.join("out", "www", output.relpath)
-                if os.path.exists(out_file):
+                if os.path.exists(os.path.join(context.folder, out_file)):
                     we_are_first = False
                     reused.append(out_file)
                 else:
@@ -135,9 +139,9 @@ def export_command(
             reused.append(lock_file)
 
         return metadata, BuildFileResult(
-            dependencies=children,
-            reused=reused,
+            children=children,
             produced=produced,
+            reused=reused,
         )
 
     produced.append(os.path.join(target_art_folder_relative_to_root, "metadata.json"))

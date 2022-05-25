@@ -206,22 +206,25 @@ async def hot_incremental_rebuild(
         still_dirty_artifacts = set(dirtied_artifacts)
         pending_artifacts = set()
 
+        def get_file_depends_on(file: str) -> List[str]:
+            if file in updated_children:
+                updated_result = updated_children[file]
+                return updated_result.dependencies
+            return old_dependency_graph.get_children(file)
+
+        def get_file_creates(file: str) -> List[str]:
+            if file in updated_children:
+                updated_result = updated_children[file]
+                return updated_result.produces
+            if file in old_output_graph:
+                return old_output_graph.get_children(file)
+            return []
+
         while files_to_rebuild or pending_results:
             rebuildable_files: List[str] = []
             for file in files_to_rebuild:
-                file_depends_on: List[str] = None
-                file_creates: List[str] = None
-
-                if file in updated_children:
-                    updated_result = updated_children[file]
-                    file_depends_on = updated_result.dependencies
-                    file_creates = updated_result.produces
-                else:
-                    file_depends_on = old_dependency_graph.get_children(file)
-                    if file in old_output_graph:
-                        file_creates = old_output_graph.get_children(file)
-                    else:
-                        file_creates = []
+                file_depends_on: List[str] = get_file_depends_on(file)
+                file_creates: List[str] = get_file_creates(file)
 
                 all_dependencies_built = True
                 for child in file_depends_on:

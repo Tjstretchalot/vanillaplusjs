@@ -8,6 +8,7 @@ from vanillaplusjs.build.file_signature import get_file_signature
 import vanillaplusjs.runners.init
 import vanillaplusjs.runners.build
 import json
+from pathlib import Path
 from PIL import Image
 
 
@@ -175,3 +176,11 @@ class Test(unittest.TestCase):
             self.assertEqual(jpeg[1]["choice"], "100")
         finally:
             self.assertRaises(StopIteration, next, gen)
+
+    def test_rebuild_no_error(self):
+        os.makedirs(os.path.join("tmp", "src", "public", "img"))
+        img = Image.new("RGB", (30, 30), color=(255, 0, 0))
+        img.save(os.path.join("tmp", "src", "public", "img", "test.jpg"))
+        for _ in self._basic_test(BASIC["orig"], BASIC["conv"]):
+            Path(os.path.join("tmp", "src", "public", "index.html")).touch()
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])

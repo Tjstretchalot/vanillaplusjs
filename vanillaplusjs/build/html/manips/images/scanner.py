@@ -67,7 +67,11 @@ def scan_command(
     produces.append(
         os.path.join(target_art_folder_relative_to_root, "placeholder.json")
     )
-    produces.append(reserve_target_lock_path(context, path_relative_to_public))
+    produces.append(
+        os.path.relpath(
+            reserve_target_lock_path(context, path_relative_to_public), context.folder
+        )
+    )
 
     image = Image.open(os.path.join(context.public_folder, path_relative_to_public))
     image_width = image.width
