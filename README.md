@@ -159,7 +159,7 @@ like the following:
     <title>Image Test</title>
 </head>
 <body>
-    <!--[IMAGE /img/hero/mobile.jpg 375 370]-->
+    <!--[IMAGE: /img/hero/mobile.jpg 375 370]-->
 </body>
 </html>
 ```
@@ -189,7 +189,7 @@ bottom 3600 pixels before resizing in the final image:
     <title>Image Test</title>
 </head>
 <body>
-    <!--[IMAGE /img/hero/mobile.jpg 375 370 cover {"pre_top_crop": 1400}]-->
+    <!--[IMAGE: /img/hero/mobile.jpg 375 370 cover {"pre_top_crop": 1400}]-->
 </body>
 </html>
 ```
