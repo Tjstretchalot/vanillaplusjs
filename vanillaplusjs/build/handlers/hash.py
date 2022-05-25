@@ -50,15 +50,18 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
     if os.path.exists(target_path_rel_to_cwd):
         return BuildFileResult(children=[], produced=[], reused=[target_path])
 
+    sha256_b64 = calculate_hash(src_path_rel_to_cwd)
+
     os.makedirs(os.path.dirname(target_path_rel_to_cwd), exist_ok=True)
-
-    sha256 = hashlib.sha256()
-    with open(src_path_rel_to_cwd, "rb") as f:
-        sha256.update(f.read())
-
-    sha256_b64 = base64.urlsafe_b64encode(sha256.digest()).decode("utf-8")
-
     with open(target_path_rel_to_cwd, "w") as f:
         f.write(sha256_b64)
 
     return BuildFileResult(children=[], produced=[target_path], reused=[])
+
+
+def calculate_hash(filepath: str) -> str:
+    sha256 = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        sha256.update(f.read())
+
+    return base64.urlsafe_b64encode(sha256.digest()).decode("utf-8")

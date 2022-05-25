@@ -24,11 +24,11 @@ from dataclasses import dataclass
 import dataclasses
 from decimal import Decimal
 from vanillaplusjs.build.build_context import BuildContext
-from vanillaplusjs.build.file_signature import FileSignature, get_file_signature
 from typing import Dict, Literal, List, Optional, Union
 import os
 import json
 import fasteners
+from vanillaplusjs.build.handlers.hash import calculate_hash
 from vanillaplusjs.build.html.manips.images.settings import ImageSettings
 from loguru import logger
 
@@ -46,8 +46,8 @@ class ImageSource:
     height: int
     """The height of the image"""
 
-    signature: FileSignature
-    """The signature of the image file"""
+    contents_hash: str
+    """The hash of the image file"""
 
 
 @dataclass(frozen=True)
@@ -166,11 +166,7 @@ def load_metadata(serd: dict) -> ImageMetadata:
             path=serd["source"]["path"],
             width=serd["source"]["width"],
             height=serd["source"]["height"],
-            signature=FileSignature(
-                mtime=serd["source"]["signature"]["mtime"],
-                filesize=serd["source"]["signature"]["filesize"],
-                inode=serd["source"]["signature"]["inode"],
-            ),
+            contents_hash=serd["source"]["contents_hash"],
         ),
         target=ImageTarget(
             settings=ImageTargetSettings(
@@ -256,8 +252,12 @@ def get_target(
     if not os.path.exists(art_path):
         return None
 
-    source_signature = get_file_signature(os.path.join(context.public_folder, relpath))
-    source_signature_as_dict = dataclasses.asdict(source_signature)
+    if os.path.exists(os.path.join(context.out_folder, relpath + ".hash")):
+        with open(os.path.join(context.out_folder, relpath + ".hash"), "r") as f:
+            contents_hash = f.read()
+    else:
+        contents_hash = calculate_hash(os.path.join(context.public_folder, relpath))
+
     target_as_dict = dataclasses.asdict(target)
     settings_hash = hash_image_settings(context.image_settings)
 
@@ -297,13 +297,13 @@ def get_target(
                     settings_hash,
                 )
                 continue
-            if entry_metadata["source"]["signature"] != source_signature_as_dict:
+            if entry_metadata["source"]["contents_hash"] != contents_hash:
                 logger.debug(
-                    "{} is not a match for {}; the source signature is {} but should be {}",
+                    "{} is not a match for {}; the source hash is {} but should be {}",
                     entry.path,
                     relpath,
-                    entry_metadata["source"]["signature"],
-                    source_signature_as_dict,
+                    entry_metadata["source"]["contents_hash"],
+                    contents_hash,
                 )
                 continue
             if entry_metadata["target"]["settings"] != target_as_dict:

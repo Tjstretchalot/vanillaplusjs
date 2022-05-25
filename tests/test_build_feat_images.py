@@ -1,10 +1,8 @@
-import dataclasses
 from typing import Dict
 import helper  # noqa
 import unittest
 import os
 import shutil
-from vanillaplusjs.build.file_signature import get_file_signature
 from vanillaplusjs.build.html.manips.images.metadata import hash_image_settings
 from vanillaplusjs.build.html.manips.images.settings import load_image_settings
 import vanillaplusjs.runners.init
@@ -104,10 +102,10 @@ class Test(unittest.TestCase):
             )
             self.assertEqual(meta["source"].get("width"), 30)
             self.assertEqual(meta["source"].get("height"), 30)
-            sign = get_file_signature(
-                os.path.join("tmp", "src", "public", "img", "test.jpg")
+            self.assertEqual(
+                meta["source"].get("contents_hash"),
+                "NFoKozIF2YRLdOXxUeOATb9fgut-K3PxoNt1ml-qZiU=",
             )
-            self.assertEqual(meta["source"].get("signature"), dataclasses.asdict(sign))
 
             self.assertIsInstance(meta.get("target"), dict)
 

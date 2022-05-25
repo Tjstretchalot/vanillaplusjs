@@ -165,14 +165,17 @@ def export_command(
     image.close()
     del image
 
+    with open(
+        os.path.join(context.out_folder, "www", path_relative_to_public + ".hash")
+    ) as f:
+        contents_hash = f.read()
+
     settings_hash = hash_image_settings(context.image_settings)
     source = ImageSource(
         path=path_relative_to_root,
         width=image_width,
         height=image_height,
-        signature=get_file_signature(
-            os.path.join(context.folder, path_relative_to_root)
-        ),
+        contents_hash=contents_hash,
     )
     outputs: Dict[str, List[ImageTargetOutput]] = dict()
 
