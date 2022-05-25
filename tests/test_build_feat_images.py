@@ -184,3 +184,7 @@ class Test(unittest.TestCase):
         for _ in self._basic_test(BASIC["orig"], BASIC["conv"]):
             Path(os.path.join("tmp", "src", "public", "index.html")).touch()
             vanillaplusjs.runners.build.main(["--folder", "tmp"])
+            Path(os.path.join("tmp", "src", "public", "index.html")).touch()
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
+            Path(os.path.join("tmp", "src", "public", "index.html")).touch()
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])

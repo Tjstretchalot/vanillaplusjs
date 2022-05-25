@@ -31,7 +31,7 @@ from PIL import Image
 from loguru import logger
 import time
 import concurrent.futures
-
+from pathlib import Path
 
 Image.MAX_IMAGE_PIXELS = 1_000_000_000
 
@@ -134,6 +134,7 @@ def export_command(
                         )
 
         if we_are_first:
+            Path(os.path.join(context.folder, lock_file)).touch()
             produced.append(lock_file)
         else:
             reused.append(lock_file)
