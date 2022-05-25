@@ -269,7 +269,6 @@ def get_target(
         )
         contents_hash = calculate_hash(os.path.join(context.public_folder, relpath))
 
-    target_as_dict = dataclasses.asdict(target)
     settings_hash = hash_image_settings(context.image_settings)
 
     scanner = os.scandir(art_path)
@@ -317,13 +316,13 @@ def get_target(
                     contents_hash,
                 )
                 continue
-            if entry_metadata.target.settings != target_as_dict:
+            if entry_metadata.target.settings != target:
                 logger.debug(
                     "{} is not a match for {}; the target settings are {} but should be {}",
                     entry.path,
                     relpath,
                     entry_metadata.target.settings,
-                    target_as_dict,
+                    target,
                 )
                 continue
 
