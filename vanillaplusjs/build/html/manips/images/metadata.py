@@ -103,6 +103,22 @@ class ImageTargetSettings:
     """
 
 
+def load_image_target_settings(serd: dict) -> ImageTargetSettings:
+    return ImageTargetSettings(
+        width=serd["width"],
+        height=serd["height"],
+        crop=serd["crop"],
+        crop_settings=CropSettingsCover(
+            pre_top_crop=serd["crop_settings"]["pre_top_crop"],
+            pre_left_crop=serd["crop_settings"]["pre_left_crop"],
+            pre_right_crop=serd["crop_settings"]["pre_right_crop"],
+            pre_bottom_crop=serd["crop_settings"]["pre_bottom_crop"],
+            crop_left_percentage=serd["crop_settings"]["crop_left_percentage"],
+            crop_top_percentage=serd["crop_settings"]["crop_top_percentage"],
+        ),
+    )
+
+
 @dataclass(frozen=True)
 class ImageTargetOutput:
     """Describes one artifact we produced when generating an image target from
@@ -169,31 +185,7 @@ def load_metadata(serd: dict) -> ImageMetadata:
             contents_hash=serd["source"]["contents_hash"],
         ),
         target=ImageTarget(
-            settings=ImageTargetSettings(
-                width=serd["target"]["settings"]["width"],
-                height=serd["target"]["settings"]["height"],
-                crop=serd["target"]["settings"]["crop"],
-                crop_settings=CropSettingsCover(
-                    pre_top_crop=serd["target"]["settings"]["crop_settings"][
-                        "pre_top_crop"
-                    ],
-                    pre_left_crop=serd["target"]["settings"]["crop_settings"][
-                        "pre_left_crop"
-                    ],
-                    pre_right_crop=serd["target"]["settings"]["crop_settings"][
-                        "pre_right_crop"
-                    ],
-                    pre_bottom_crop=serd["target"]["settings"]["crop_settings"][
-                        "pre_bottom_crop"
-                    ],
-                    crop_left_percentage=serd["target"]["settings"]["crop_settings"][
-                        "crop_left_percentage"
-                    ],
-                    crop_top_percentage=serd["target"]["settings"]["crop_settings"][
-                        "crop_top_percentage"
-                    ],
-                ),
-            ),
+            settings=load_image_target_settings(serd["target"]["settings"]),
             outputs=dict(
                 (
                     key,
@@ -290,8 +282,8 @@ def get_target(
                         with open(
                             os.path.join(entry.path, "placeholder.json"), "r"
                         ) as f:
-                            placeholder = json.load(f)
-                        if placeholder == target_as_dict:
+                            placeholder = load_image_target_settings(json.load(f))
+                        if placeholder == target:
                             return int(entry.name)
                 continue
 
