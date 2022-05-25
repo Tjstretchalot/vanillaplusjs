@@ -201,4 +201,4 @@ class Test(unittest.TestCase):
 
             image_settings = load_image_settings(config["images"])
             hashed_image_settings = hash_image_settings(image_settings)
-            self.assertEqual(hashed_image_settings, 7551378458550336556)
+            self.assertEqual(hashed_image_settings, 5478490489390831371)

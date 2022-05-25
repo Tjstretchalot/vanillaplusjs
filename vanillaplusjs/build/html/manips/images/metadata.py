@@ -22,9 +22,10 @@ empty folders during the scan step, and handling these specially.
 """
 from dataclasses import dataclass
 import dataclasses
+from decimal import Decimal
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.file_signature import FileSignature, get_file_signature
-from typing import Dict, Literal, List, Optional
+from typing import Dict, Literal, List, Optional, Union
 import os
 import json
 import fasteners
@@ -362,30 +363,30 @@ def hash_image_settings(settings: ImageSettings) -> int:
     sorted_formats = sorted(settings.formats.keys())
     for format_name in sorted_formats:
         format = settings.formats[format_name]
-        result = overflow(result * prime + hash_str(format_name))
+        result = overflow(result * prime + stable_hash(format_name))
 
         sorted_export_names = sorted(format.exports.keys())
         for export_name in sorted_export_names:
             export = format.exports[export_name]
-            result = overflow(result * prime + hash_str(export_name))
-            result = overflow(result * prime + hash(export.min_area_px2))
-            result = overflow(result * prime + hash(export.max_area_px2))
-            result = overflow(result * prime + hash(export.preference))
+            result = overflow(result * prime + stable_hash(export_name))
+            result = overflow(result * prime + stable_hash(export.min_area_px2))
+            result = overflow(result * prime + stable_hash(export.max_area_px2))
+            result = overflow(result * prime + stable_hash(export.preference))
 
             sorted_formatter_kwarg_names = sorted(export.formatter_kwargs.keys())
             for kwarg_name in sorted_formatter_kwarg_names:
                 kwarg = export.formatter_kwargs[kwarg_name]
-                result = overflow(result * prime + hash_str(kwarg_name))
+                result = overflow(result * prime + stable_hash(kwarg_name))
                 if isinstance(kwarg, str):
-                    result = overflow(result * prime + hash_str(kwarg))
+                    result = overflow(result * prime + stable_hash(kwarg))
                 else:
-                    result = overflow(result * prime + hash(kwarg))
+                    result = overflow(result * prime + stable_hash(kwarg))
 
-        result = overflow(result * prime + hash(format.minimum_unit_size_bytes))
+        result = overflow(result * prime + stable_hash(format.minimum_unit_size_bytes))
 
-    result = overflow(result * prime + hash_str(settings.default_format))
-    result = overflow(result * prime + hash(settings.maximum_resolution))
-    result = overflow(result * prime + hash(settings.resolution_step))
+    result = overflow(result * prime + stable_hash(settings.default_format))
+    result = overflow(result * prime + stable_hash(settings.maximum_resolution))
+    result = overflow(result * prime + stable_hash(settings.resolution_step))
     return result
 
 
@@ -394,11 +395,34 @@ def overflow(n: int) -> int:
     return n & 0xFFFFFFFFFFFFFFFF
 
 
+def stable_hash(v: Optional[Union[int, float, Decimal, str, bool]]) -> int:
+    """Provides a stable hash of v"""
+    if v is None:
+        return 447684351148253
+
+    if v is True:
+        return 945172902943441
+
+    if v is False:
+        return 596202892359953
+
+    if isinstance(v, int):
+        return v
+
+    if isinstance(v, float):
+        return overflow(31 * hash_str(str(v)) + 843027630870857)
+
+    if isinstance(v, Decimal):
+        return overflow(31 * hash_str(str(v)) + 563112335098849)
+
+    if isinstance(v, str):
+        return hash_str(v)
+
+    raise ValueError(f"Unsupported type: {type(v)}")
+
+
 def hash_str(s: str) -> int:
     """Produces a stable hash for the given string."""
-    if s is None:
-        return hash(s)
-
     prime = 31
     result = 1
 
