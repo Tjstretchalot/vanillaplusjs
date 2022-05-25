@@ -124,7 +124,7 @@ class ImageTargetOutput:
     """
 
 
-@dataclass
+@dataclass(frozen=True)
 class ImageTarget:
     """A target we needed when producing an image."""
 
@@ -163,7 +163,7 @@ def load_metadata(serd: dict) -> ImageMetadata:
     return ImageMetadata(
         settings_hash=serd["settings_hash"],
         source=ImageSource(
-            path=serd["source"]["path"],
+            path=serd["source"]["path"].replace("/", os.path.sep),
             width=serd["source"]["width"],
             height=serd["source"]["height"],
             contents_hash=serd["source"]["contents_hash"],
@@ -201,7 +201,7 @@ def load_metadata(serd: dict) -> ImageMetadata:
                         ImageTargetOutput(
                             width=output["width"],
                             height=output["height"],
-                            relpath=output["relpath"],
+                            relpath=output["relpath"].replace("/", os.path.sep),
                             choice=output["choice"],
                         )
                         for output in value
@@ -215,7 +215,12 @@ def load_metadata(serd: dict) -> ImageMetadata:
 
 def store_metadata(metadata: ImageMetadata) -> dict:
     """Stores the metadata in a JSON-serializable dict."""
-    return dataclasses.asdict(metadata)
+    res = dataclasses.asdict(metadata)
+    res["source"]["path"] = res["source"]["path"].replace(os.path.sep, "/")
+    for target in res["target"]["outputs"].values():
+        for output in target:
+            output["relpath"] = output["relpath"].replace(os.path.sep, "/")
+    return res
 
 
 def get_target(
@@ -292,18 +297,18 @@ def get_target(
                 continue
 
             with open(os.path.join(entry.path, "metadata.json"), "r") as f:
-                entry_metadata = json.load(f)
+                entry_metadata = load_metadata(json.load(f))
 
-            if entry_metadata["settings_hash"] != settings_hash:
+            if entry_metadata.settings_hash != settings_hash:
                 logger.debug(
                     "{} is not a match for {}; the settings hash is {} but should be {}",
                     entry.path,
                     relpath,
-                    entry_metadata["settings_hash"],
+                    entry_metadata.settings_hash,
                     settings_hash,
                 )
                 continue
-            if entry_metadata["source"]["contents_hash"] != contents_hash:
+            if entry_metadata.source.contents_hash != contents_hash:
                 logger.debug(
                     "{} is not a match for {}; the source hash is {} but should be {}",
                     entry.path,
@@ -312,12 +317,12 @@ def get_target(
                     contents_hash,
                 )
                 continue
-            if entry_metadata["target"]["settings"] != target_as_dict:
+            if entry_metadata.target.settings != target_as_dict:
                 logger.debug(
                     "{} is not a match for {}; the target settings are {} but should be {}",
                     entry.path,
                     relpath,
-                    entry_metadata["target"]["settings"],
+                    entry_metadata.target.settings,
                     target_as_dict,
                 )
                 continue

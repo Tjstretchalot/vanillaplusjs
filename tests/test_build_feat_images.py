@@ -98,7 +98,7 @@ class Test(unittest.TestCase):
             self.assertIsInstance(meta.get("source"), dict)
             self.assertEqual(
                 meta["source"].get("path"),
-                os.path.join("src", "public", "img", "test.jpg"),
+                "src/public/img/test.jpg",  # path separator should be os-independent
             )
             self.assertEqual(meta["source"].get("width"), 30)
             self.assertEqual(meta["source"].get("height"), 30)
@@ -148,15 +148,11 @@ class Test(unittest.TestCase):
             webp = sorted(webp, key=lambda x: x["width"])
             self.assertEqual(webp[0]["width"], 20)
             self.assertEqual(webp[0]["height"], 20)
-            self.assertEqual(
-                webp[0]["relpath"], os.path.join("img", "test", "1", "20x20.webp")
-            )
+            self.assertEqual(webp[0]["relpath"], "img/test/1/20x20.webp")
             self.assertEqual(webp[0]["choice"], "lossless")
             self.assertEqual(webp[1]["width"], 30)
             self.assertEqual(webp[1]["height"], 30)
-            self.assertEqual(
-                webp[1]["relpath"], os.path.join("img", "test", "1", "30x30.webp")
-            )
+            self.assertEqual(webp[1]["relpath"], "img/test/1/30x30.webp")
             self.assertEqual(webp[1]["choice"], "lossless")
 
             jpeg: list = outputs["jpeg"]
@@ -164,15 +160,11 @@ class Test(unittest.TestCase):
             jpeg = sorted(jpeg, key=lambda x: x["width"])
             self.assertEqual(jpeg[0]["width"], 20)
             self.assertEqual(jpeg[0]["height"], 20)
-            self.assertEqual(
-                jpeg[0]["relpath"], os.path.join("img", "test", "1", "20x20.jpeg")
-            )
+            self.assertEqual(jpeg[0]["relpath"], "img/test/1/20x20.jpeg")
             self.assertEqual(jpeg[0]["choice"], "100")
             self.assertEqual(jpeg[1]["width"], 30)
             self.assertEqual(jpeg[1]["height"], 30)
-            self.assertEqual(
-                jpeg[1]["relpath"], os.path.join("img", "test", "1", "30x30.jpeg")
-            )
+            self.assertEqual(jpeg[1]["relpath"], "img/test/1/30x30.jpeg")
             self.assertEqual(jpeg[1]["choice"], "100")
         finally:
             self.assertRaises(StopIteration, next, gen)
