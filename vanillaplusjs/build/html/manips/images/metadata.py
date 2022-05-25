@@ -289,10 +289,31 @@ def get_target(
                 entry_metadata = json.load(f)
 
             if entry_metadata["settings_hash"] != settings_hash:
+                logger.debug(
+                    "{} is not a match for {}; the settings hash is {} but should be {}",
+                    entry.path,
+                    relpath,
+                    entry_metadata["settings_hash"],
+                    settings_hash,
+                )
                 continue
             if entry_metadata["source"]["signature"] != source_signature_as_dict:
+                logger.debug(
+                    "{} is not a match for {}; the source signature is {} but should be {}",
+                    entry.path,
+                    relpath,
+                    entry_metadata["source"]["signature"],
+                    source_signature_as_dict,
+                )
                 continue
             if entry_metadata["target"]["settings"] != target_as_dict:
+                logger.debug(
+                    "{} is not a match for {}; the target settings are {} but should be {}",
+                    entry.path,
+                    relpath,
+                    entry_metadata["target"]["settings"],
+                    target_as_dict,
+                )
                 continue
 
             return int(entry.name)

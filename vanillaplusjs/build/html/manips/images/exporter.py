@@ -121,6 +121,10 @@ def export_command(
                     reused.append(out_file)
                 else:
                     produced.append(out_file)
+                    os.makedirs(
+                        os.path.dirname(os.path.join(context.folder, out_file)),
+                        exist_ok=True,
+                    )
 
                     if context.symlinks:
                         os.symlink(
