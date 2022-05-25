@@ -5,6 +5,8 @@ import unittest
 import os
 import shutil
 from vanillaplusjs.build.file_signature import get_file_signature
+from vanillaplusjs.build.html.manips.images.metadata import hash_image_settings
+from vanillaplusjs.build.html.manips.images.settings import load_image_settings
 import vanillaplusjs.runners.init
 import vanillaplusjs.runners.build
 import json
@@ -188,3 +190,15 @@ class Test(unittest.TestCase):
             vanillaplusjs.runners.build.main(["--folder", "tmp"])
             Path(os.path.join("tmp", "src", "public", "index.html")).touch()
             vanillaplusjs.runners.build.main(["--folder", "tmp"])
+
+    def test_stable_image_settings_hash(self):
+        os.makedirs(os.path.join("tmp", "src", "public", "img"))
+        img = Image.new("RGB", (30, 30), color=(255, 0, 0))
+        img.save(os.path.join("tmp", "src", "public", "img", "test.jpg"))
+        for _ in self._basic_test(BASIC["orig"], BASIC["conv"]):
+            with open(os.path.join("tmp", "vanillaplusjs.json")) as f:
+                config = json.load(f)
+
+            image_settings = load_image_settings(config["images"])
+            hashed_image_settings = hash_image_settings(image_settings)
+            self.assertEqual(hashed_image_settings, 7551378458550336556)
