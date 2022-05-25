@@ -362,25 +362,28 @@ def hash_image_settings(settings: ImageSettings) -> int:
     sorted_formats = sorted(settings.formats.keys())
     for format_name in sorted_formats:
         format = settings.formats[format_name]
-        result = overflow(result * prime + hash(format_name))
+        result = overflow(result * prime + hash_str(format_name))
 
         sorted_export_names = sorted(format.exports.keys())
         for export_name in sorted_export_names:
             export = format.exports[export_name]
-            result = overflow(result * prime + hash(export_name))
+            result = overflow(result * prime + hash_str(export_name))
             result = overflow(result * prime + hash(export.min_area_px2))
             result = overflow(result * prime + hash(export.max_area_px2))
             result = overflow(result * prime + hash(export.preference))
 
-            formatter_kwarg_names = sorted(export.formatter_kwargs.keys())
-            for kwarg_name in formatter_kwarg_names:
+            sorted_formatter_kwarg_names = sorted(export.formatter_kwargs.keys())
+            for kwarg_name in sorted_formatter_kwarg_names:
                 kwarg = export.formatter_kwargs[kwarg_name]
-                result = overflow(result * prime + hash(kwarg_name))
-                result = overflow(result * prime + hash(kwarg))
+                result = overflow(result * prime + hash_str(kwarg_name))
+                if isinstance(kwarg, str):
+                    result = overflow(result * prime + hash_str(kwarg))
+                else:
+                    result = overflow(result * prime + hash(kwarg))
 
         result = overflow(result * prime + hash(format.minimum_unit_size_bytes))
 
-    result = overflow(result * prime + hash(settings.default_format))
+    result = overflow(result * prime + hash_str(settings.default_format))
     result = overflow(result * prime + hash(settings.maximum_resolution))
     result = overflow(result * prime + hash(settings.resolution_step))
     return result
@@ -389,3 +392,17 @@ def hash_image_settings(settings: ImageSettings) -> int:
 def overflow(n: int) -> int:
     """Overflows the integer as if it were a 64-bit unsigned integer."""
     return n & 0xFFFFFFFFFFFFFFFF
+
+
+def hash_str(s: str) -> int:
+    """Produces a stable hash for the given string."""
+    if s is None:
+        return hash(s)
+
+    prime = 31
+    result = 1
+
+    for c in s:
+        result = overflow(result * prime + ord(c))
+
+    return result
