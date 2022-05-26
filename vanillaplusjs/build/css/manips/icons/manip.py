@@ -69,6 +69,10 @@ class IconManipulator(CSSManipulator):
         args = self.get_icon_command_args(node)
         assert args is not None, "continue_mark on non-icon command"
 
+        css_file_relpath = self.context.default_css_file.replace("/", os.path.sep)
+        if self.relpath != css_file_relpath:
+            self.children.add(css_file_relpath)
+
         svg = None
         replacer = None
 
@@ -543,6 +547,10 @@ class IconManipulator(CSSManipulator):
         """Adds any dependencies or produces appropriate for the icon command
         with the given arguments.
         """
+        css_file_relpath = self.context.default_css_file.replace("/", os.path.sep)
+        if self.relpath != css_file_relpath:
+            self.dependencies.add(css_file_relpath)
+
         self.dependencies.add(args.input_icon)
 
         for color in args.output_colors:

@@ -1,8 +1,10 @@
+from pathlib import Path
 from typing import Dict
 import helper  # noqa
 import unittest
 import os
 import shutil
+from vanillaplusjs.build.file_signature import get_file_signature
 import vanillaplusjs.runners.init
 import vanillaplusjs.runners.build
 
@@ -789,6 +791,26 @@ PREPROCESSOR: icon x primary all-colors all-sizes
     },
 }
 
+CHANGE_MAIN_CSS_REBUILDS = {
+    "orig": {
+        "src/public/css/main.css": """
+:root {
+    --col-primary: #333;
+    --icon-size-medium: 1rem;
+}
+""",
+        "src/public/css/icons.css": """
+/*! PREPROCESSOR: icon x primary all-colors all-sizes */
+""",
+        "src/public/img/icons/x.svg": """
+<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 2.38721L9.5 9.88721" stroke="#333333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M2 9.88721L9.5 2.38721" stroke="#333333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+""",
+    }
+}
+
 
 class Test(unittest.TestCase):
     def _basic_test(self, orig: Dict[str, str], conv: Dict[str, str]):
@@ -832,3 +854,27 @@ class Test(unittest.TestCase):
             OVERRIDE_BUTTON_STYLE_MULTILINE_COMMENT["orig"],
             OVERRIDE_BUTTON_STYLE_MULTILINE_COMMENT["conv"],
         )
+
+    def test_change_main_css_rebuilds(self):
+        orig = CHANGE_MAIN_CSS_REBUILDS["orig"]
+        self.maxDiff = None
+        os.makedirs(os.path.join("tmp"), exist_ok=True)
+        try:
+            vanillaplusjs.runners.init.main(["--folder", "tmp"])
+            for path, val in orig.items():
+                os.makedirs(os.path.dirname(os.path.join("tmp", path)), exist_ok=True)
+                with open(os.path.join("tmp", path), "w") as f:
+                    f.write(val)
+
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
+            old_signature = get_file_signature(
+                os.path.join("tmp", "out", "www", "css", "icons.css")
+            )
+            Path(os.path.join("tmp", "src", "public", "css", "main.css")).touch()
+            vanillaplusjs.runners.build.main(["--folder", "tmp"])
+            new_signature = get_file_signature(
+                os.path.join("tmp", "out", "www", "css", "icons.css")
+            )
+            self.assertNotEqual(old_signature, new_signature)
+        finally:
+            shutil.rmtree("tmp")
