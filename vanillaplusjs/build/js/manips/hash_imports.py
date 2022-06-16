@@ -128,13 +128,15 @@ class HashImportsManipulator(JSYieldManipulator):
             abs_import_path = os.path.abspath(
                 os.path.join(
                     self.context.folder,
-                    self.relpath,
+                    os.path.dirname(self.relpath),
                     import_path.replace("/", os.path.sep),
                 )
             )
             rel_to_root = os.path.relpath(
                 abs_import_path, os.path.abspath(self.context.folder)
             )
+            rel_to_public = os.path.relpath(rel_to_root, os.path.join("src", "public"))
+            import_path = "/" + rel_to_public.replace(os.path.sep, "/")
 
         if self.mode == "scan":
             self.dependencies.add(rel_to_root)
