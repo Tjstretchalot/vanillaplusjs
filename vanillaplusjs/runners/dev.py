@@ -29,6 +29,7 @@ import threading
 import time
 import json
 import asyncio
+import shutil
 
 
 def main(args: Sequence[str]):
@@ -86,7 +87,21 @@ def dev(folder: str, host: str, port: int, watch: bool, debounce: int) -> None:
         )
         sys.exit(1)
 
-    build(folder=folder, dev=True, symlinks=None, delay_files=[])
+    try:
+        build(folder=folder, dev=True, symlinks=None, delay_files=[])
+    except Exception as e:
+        if isinstance(e, SystemExit):
+            raise
+
+        if not os.path.lexists(os.path.join(folder, "out")):
+            raise
+
+        logger.exception(
+            "During first build, will retry with fresh easy-to-regenerate files"
+        )
+        shutil.rmtree(os.path.join(folder, "out"))
+        build(folder=folder, dev=True, symlinks=None, delay_files=[])
+
     if not watch:
         return run_server(folder=folder, host=host, port=port)
 
@@ -161,8 +176,12 @@ class DevEventHandler(FileSystemEventHandler):
         self.symlinks = symlinks
         """Whether symlinks are supported"""
 
+        self.project_is_unbuildable = False
+        """True if the last build failed and there haven't been any changes since,
+        False if the last build succeeded or there have been changes since"""
+
         self.lock = threading.RLock()
-        """The lock for the deleted/changed/created/last_change_at variables."""
+        """The lock for the deleted/changed/created/last_change_at/unbuildable variables."""
 
         self.deleted_files: Set[str] = set()
         self.changed_files: Set[str] = set()
@@ -173,6 +192,8 @@ class DevEventHandler(FileSystemEventHandler):
         """Rebuilds the project if it's appropriate to do so."""
         with self.lock:
             now = time.time()
+            if self.project_is_unbuildable:
+                return
             if (
                 not self.deleted_files
                 and not self.changed_files
@@ -244,26 +265,53 @@ class DevEventHandler(FileSystemEventHandler):
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(
-            hot_incremental_rebuild(
-                context,
-                old_dependency_graph,
-                old_output_graph,
-                changed_files,
-                added_files,
-                deleted_files,
-            )
-        )
-
-        pending = asyncio.all_tasks(loop)
-        while pending:
+        try:
             loop.run_until_complete(
-                asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
+                hot_incremental_rebuild(
+                    context,
+                    old_dependency_graph,
+                    old_output_graph,
+                    changed_files,
+                    added_files,
+                    deleted_files,
+                )
             )
-            pending = asyncio.all_tasks(loop)
 
-        asyncio.set_event_loop(None)
-        loop.close()
+            pending = asyncio.all_tasks(loop)
+            while pending:
+                loop.run_until_complete(
+                    asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
+                )
+                pending = asyncio.all_tasks(loop)
+
+            with self.lock:
+                self.project_is_unbuildable = False
+        except Exception:
+            logger.exception("Error rebuilding")
+            with self.lock:
+                for file in changed:
+                    if os.path.lexists(file):
+                        if file not in self.created_files:
+                            self.changed_files.add(file)
+                        if file in self.deleted_files:
+                            self.deleted_files.remove(file)
+                for file in created:
+                    if os.path.lexists(file):
+                        if file not in self.changed_files:
+                            self.created_files.add(file)
+                        if file in self.deleted_files:
+                            self.deleted_files.remove(file)
+                for file in deleted:
+                    if not os.path.lexists(file):
+                        if file in self.changed_files:
+                            self.changed_files.remove(file)
+                        if file in self.created_files:
+                            self.created_files.remove(file)
+                        self.deleted_files.add(file)
+                self.project_is_unbuildable = True
+        finally:
+            asyncio.set_event_loop(None)
+            loop.close()
 
     def on_modified(self, event: FileModifiedEvent):
         if event.is_directory:
@@ -271,6 +319,7 @@ class DevEventHandler(FileSystemEventHandler):
         with self.lock:
             if event.src_path not in self.created_files:
                 self.changed_files.add(event.src_path)
+            self.project_is_unbuildable = False
             self.last_change_at = time.time()
 
     def on_created(self, event: FileCreatedEvent):
@@ -282,6 +331,7 @@ class DevEventHandler(FileSystemEventHandler):
                 self.changed_files.add(event.src_path)
             else:
                 self.created_files.add(event.src_path)
+            self.project_is_unbuildable = False
             self.last_change_at = time.time()
 
     def on_deleted(self, event: FileDeletedEvent):
@@ -295,6 +345,7 @@ class DevEventHandler(FileSystemEventHandler):
                 self.created_files.remove(event.src_path)
             else:
                 self.deleted_files.add(event.src_path)
+            self.project_is_unbuildable = False
             self.last_change_at = time.time()
 
     def on_moved(self, event: FileMovedEvent):
