@@ -88,7 +88,9 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
     for build_result in sub_build_results:
         children.update(build_result.children)
         produced.update(build_result.produced)
-        reused.update(build_result.reused)
+        for itm in build_result.reused:
+            if itm not in produced:
+                reused.add(itm)
 
     return BuildFileResult(
         children=list(children), produced=list(produced), reused=list(reused)
