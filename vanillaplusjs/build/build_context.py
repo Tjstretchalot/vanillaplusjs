@@ -212,11 +212,24 @@ def load_external_files(data: Dict[str, Dict]) -> Dict[str, ExternalFile]:
     return result
 
 
+def shallow_replace_envvars(data: dict) -> dict:
+    """Replaces all values in the dictionary which are strings starting with env:// with
+    the environment variable after env://
+    """
+    result = dict()
+    for key, value in data.items():
+        if isinstance(value, str) and value.startswith("env://"):
+            result[key] = os.environ[value[6:]]
+        else:
+            result[key] = value
+    return result
+
+
 def load_js_constants(data: dict) -> JSConstants:
     """Loads the js constants from the given data"""
     return JSConstants(
         relpath=data["relpath"].replace("/", os.path.sep),
-        shared=data["shared"],
-        dev=data["dev"],
-        prod=data["prod"],
+        shared=shallow_replace_envvars(data["shared"]),
+        dev=shallow_replace_envvars(data["dev"]),
+        prod=shallow_replace_envvars(data["prod"]),
     )
