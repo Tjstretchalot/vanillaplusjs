@@ -25,6 +25,7 @@ def get_sha384(filepath: str) -> str:
 class Test(unittest.TestCase):
     def test_downloads_bootstrap(self):
         os.makedirs(os.path.join("tmp"), exist_ok=True)
+        os.environ["VANILLAPLUSJS_TMP"] = "tmp"
         try:
             vanillaplusjs.runners.init.main(["--folder", "tmp"])
             with open("tmp/vanillaplusjs.json", "r") as f:
@@ -42,6 +43,7 @@ class Test(unittest.TestCase):
                     "SHARED_STR_3": 'with "double" quotes',
                     "SHARED_STR_4": "with \"double\" and 'single' quotes",
                     "SHARED_STR_5": "with literal \\escape",
+                    "SHARED_ENVVAR": "env://VANILLAPLUSJS_TMP",
                     "MODE": "shared",
                 },
                 "dev": {"MODE": "dev"},
@@ -57,15 +59,16 @@ class Test(unittest.TestCase):
             vanillaplusjs.runners.build.main(["--folder", "tmp"])
             with open("tmp/out/www/js/constants.js.hash", "r") as f:
                 self.assertEqual(
-                    "PyNlZOS8hJtBQEacaeaiPngvDCi006V6zLAPUe1RxMc=", f.read()
+                    "nfE9rY3VIGwcpdT4qjYJCakZHUmrONIf9jxh9kFCZbg=", f.read()
                 )
 
             vanillaplusjs.runners.build.main(["--folder", "tmp", "--dev"])
             with open("tmp/out/www/js/constants.js.hash", "r") as f:
                 self.assertEqual(
-                    "yfxQLH4swtohmdlHBArWsfgDSSO1Jgos5x19k1bbFYg=", f.read()
+                    "NBsyWL_9y7x_zhj_6ywxmTzuBoysSWeqULqLGMvseg4=", f.read()
                 )
         finally:
+            os.environ.pop("VANILLAPLUSJS_TMP")
             shutil.rmtree("tmp")
 
 
