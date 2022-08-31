@@ -84,8 +84,7 @@ def tokenize(fp: TextIOBase) -> Generator[JSToken, None, None]:
             yield _consume_string_literal(peekable)
             continue
 
-        while rem := peekable.read(16 * 1024):
-            yield JSToken(type=JSTokenType.invalid, value=rem)
+        yield JSToken(type=JSTokenType.invalid, value=peekable.read(1))
 
     yield JSToken(type=JSTokenType.eof, value=None)
 

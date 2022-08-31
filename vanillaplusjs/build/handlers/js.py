@@ -9,6 +9,7 @@ from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.js.manips.hash_imports import (
     HashImportsManipulator,
 )
+from vanillaplusjs.build.js.manips.type_hints import TypeHintsManipulator
 import vanillaplusjs.build.handlers.copy
 import vanillaplusjs.build.handlers.hash
 from vanillaplusjs.build.js.manipulate_and_serialize import manipulate_and_serialize
@@ -17,6 +18,7 @@ import os
 
 
 MANIPULATORS = [
+    TypeHintsManipulator,
     HashImportsManipulator,
 ]
 """The manipulators to apply to the document. Each manipulator is a subclass
