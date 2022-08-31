@@ -17,7 +17,8 @@ def serialize(token: JSToken) -> str:
     elif token["type"] == JSTokenType.line_terminator:
         return "\n"
     elif token["type"] == JSTokenType.comment:
-        return f'/*{token["value"]}*/'
+        cleaned = token["value"].replace("*/", "*\\/")
+        return f"/*{cleaned}*/"
     elif token["type"] == JSTokenType.open_curly_bracket:
         return "{"
     elif token["type"] == JSTokenType.close_curly_bracket:

@@ -16,9 +16,9 @@ BASIC = {
         "src/public/js/example3.js": "const a = 5;\nconst b = 3; // @@type-hint\nconst c = 4;",
     },
     "conv": {
-        "out/www/js/example.js": '/*"foobar" /* @@type-hint*/*/',
-        "out/www/js/example2.js": "const a = 5;\n/*const b = 3; /* @@type-hint*/*/",
-        "out/www/js/example3.js": "const a = 5;\n/*const b = 3; /* @@type-hint*/*/\nconst c = 4;",
+        "out/www/js/example.js": '/*"foobar" /* @@type-hint*\/*/',
+        "out/www/js/example2.js": "const a = 5;\n/*const b = 3; /* @@type-hint*\/*/",
+        "out/www/js/example3.js": "const a = 5;\n/*const b = 3; /* @@type-hint*\/*/\nconst c = 4;",
     },
 }
 

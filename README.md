@@ -566,6 +566,28 @@ export function apiFetch(url, options) {
 Which will allow you to run the backend server on a different port
 locally, but in production mode, it will use the same port as the frontend.
 
+### Commenting Non-Functional Lines
+
+Non-functional lines of javascript which are used primarily for type hints,
+such as those for describing function overloading, can be commented out by
+including a comment which is exclusively `@@type-hints` (plus whitespace).
+For example:
+
+```js
+export function foo(a, b); // @type-hint
+export function foo(...args) {
+    // ...
+}
+```
+
+will become
+
+```js
+/*export function foo(a, b); /* @@type-hint *\/*/
+export function foo(...args) {
+    /* ...*/
+}
+```
 ## Contributing
 
 This package uses `pre-commit` to install git commit hooks. Before
