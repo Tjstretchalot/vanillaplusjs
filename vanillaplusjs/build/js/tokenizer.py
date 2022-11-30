@@ -242,7 +242,24 @@ def _consume_string_literal(peekable: PeekableTextIO) -> JSToken:
                 peeked = peekable.peek(1)
                 if not peeked:
                     return JSToken(type=JSTokenType.invalid, value=quote + res + "\\")
-                res += peekable.read(1)
+
+                escaped = peekable.read(1)
+                if escaped == "n":
+                    res += "\n"
+                elif escaped == "r":
+                    res += "\r"
+                elif escaped == "t":
+                    res += "\t"
+                elif escaped == "b":
+                    res += "\b"
+                elif escaped == "f":
+                    res += "\f"
+                elif escaped == "v":
+                    res += "\v"
+                elif escaped == "0":
+                    res += "\0"
+                else:
+                    res += escaped
         else:
             res += peekable.read(1)
 

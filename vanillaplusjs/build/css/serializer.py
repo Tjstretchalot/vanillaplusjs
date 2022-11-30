@@ -89,12 +89,27 @@ def serialize_string_auto_quote(string: str) -> str:
     return serialize_string(string, '"')
 
 
+SPECIAL_ESCAPE_CHARACTERS = {
+    "\n": "\\n",
+    "\r": "\\r",
+    "\t": "\\t",
+    "\b": "\\b",
+    "\f": "\\f",
+    "\v": "\\v",
+    "\0": "\\0",
+}
+
+
 def serialize_string(string: str, quote: str, simple_escape_characters=("\\",)) -> str:
     """Serializes the given string, using the given quote character."""
     res = quote
     for char in string:
         if char == quote or char in simple_escape_characters:
             res += "\\" + char
+            continue
+
+        if char in SPECIAL_ESCAPE_CHARACTERS:
+            res += SPECIAL_ESCAPE_CHARACTERS[char]
             continue
 
         char_ord = ord(char)
