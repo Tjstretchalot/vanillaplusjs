@@ -273,17 +273,22 @@ def _consume_regex(peekable: PeekableTextIO) -> Union[JSToken, JSTokenWithExtra]
     the current peeked character is a slash.
     """
     peekable.read(1)
+    group_level = 0
     res = ""
     while True:
         peeked = peekable.peek(1)
         if not peeked or _is_newline(peeked):
             return JSToken(type=JSTokenType.invalid, value="/" + res)
-        if peeked == "/":
+        if group_level == 0 and peeked == "/":
             peekable.read(1)
             break
         if peeked == "\\" and peekable.peek(2) == "\\/":
             res += peekable.read(2)
             continue
+        if group_level > 0 and peeked == "]":
+            group_level -= 1
+        if peeked == "[":
+            group_level += 1
         res += peekable.read(1)
     flags = ""
     while True:
