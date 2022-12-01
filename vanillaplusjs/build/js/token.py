@@ -41,6 +41,10 @@ class JSTokenType(str, Enum):
     """Value is None"""
 
     # DIFFERENT FROM SPEC
+    regex = "RegularExpressionLiteral"
+    """Value is the contents of the matched regular expression literal, e.g., for /\g/, the value is '\\g'
+    The `extra` field contains the flags, if any. so for /foo/g, the value is 'foo' and the extra is 'g'
+    """
     invalid = "Invalid"
     """Value is the contents of the invalid token"""
     eof = "EOF"
@@ -55,3 +59,16 @@ class JSToken(TypedDict):
     value: Optional[str]
     """The value for the token. See JSTokenType for value definitions
     """
+
+
+class JSTokenWithExtra(TypedDict):
+
+    type: JSTokenType
+    """The type of the token."""
+
+    value: Optional[str]
+    """The value for the token. See JSTokenType for value definitions
+    """
+
+    extra: Optional[str]
+    """Extra information about the token."""

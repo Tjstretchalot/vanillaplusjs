@@ -1,9 +1,9 @@
-from typing import Iterable
-from .token import JSToken, JSTokenType
+from typing import Iterable, Union
+from vanillaplusjs.build.js.token import JSToken, JSTokenType, JSTokenWithExtra
 from vanillaplusjs.build.css.serializer import serialize_string_auto_quote
 
 
-def serialize(token: JSToken) -> str:
+def serialize(token: Union[JSToken, JSTokenWithExtra]) -> str:
     """Serializes the given JS token.
 
     Args:
@@ -37,6 +37,8 @@ def serialize(token: JSToken) -> str:
         return token["value"]
     elif token["type"] == JSTokenType.string_literal:
         return serialize_string_auto_quote(token["value"])
+    elif token["type"] == JSTokenType.regex:
+        return f"/{token['value']}/{token['extra']}"
     elif token["type"] == JSTokenType.semicolon:
         return ";"
     elif token["type"] == JSTokenType.invalid:

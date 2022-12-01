@@ -6,14 +6,14 @@ just enough tokens that for a javascript module we can detect any import stateme
 that the document starts with.
 """
 from io import TextIOBase
-from typing import Generator, Optional
-from .token import JSToken, JSTokenType
+from typing import Generator, Optional, Union
+from vanillaplusjs.build.js.token import JSToken, JSTokenType, JSTokenWithExtra
 from vanillaplusjs.build.ioutil import PreprocessedTextIO, PeekableTextIO
 import string
 from .unicode_derived import is_id_start, is_id_continue
 
 
-def tokenize(fp: TextIOBase) -> Generator[JSToken, None, None]:
+def tokenize(fp: TextIOBase) -> Generator[Union[JSToken, JSTokenWithExtra], None, None]:
     """Tokenizes the given file-like object, streaming back the
     tokens as they are parsed. This is not a compliant or complete tokenizer,
     and it does not synthesize semicolons.
@@ -82,6 +82,10 @@ def tokenize(fp: TextIOBase) -> Generator[JSToken, None, None]:
 
         if peeked == "'":
             yield _consume_string_literal(peekable)
+            continue
+
+        if peeked == "/":
+            yield _consume_regex(peekable)
             continue
 
         yield JSToken(type=JSTokenType.invalid, value=peekable.read(1))
@@ -262,6 +266,37 @@ def _consume_string_literal(peekable: PeekableTextIO) -> JSToken:
                     res += escaped
         else:
             res += peekable.read(1)
+
+
+def _consume_regex(peekable: PeekableTextIO) -> Union[JSToken, JSTokenWithExtra]:
+    """Consumes a regular expression literal from the given peekable, assuming that
+    the current peeked character is a slash.
+    """
+    peekable.read(1)
+    res = ""
+    while True:
+        peeked = peekable.peek(1)
+        if not peeked or _is_newline(peeked):
+            return JSToken(type=JSTokenType.invalid, value="/" + res)
+        if peeked == "/":
+            peekable.read(1)
+            break
+        if peeked == "\\" and peekable.peek(2) == "\\/":
+            res += peekable.read(2)
+            continue
+        res += peekable.read(1)
+    flags = ""
+    while True:
+        peeked = peekable.peek(1)
+        if peeked is None or peeked not in "igmsuyd":
+            break
+        flags += peekable.read(1)
+
+    return JSTokenWithExtra(
+        type=JSTokenType.regex,
+        value=res,
+        extra=flags,
+    )
 
 
 WHITESPACE_CHARACTERS = frozenset(
