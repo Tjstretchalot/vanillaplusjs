@@ -100,7 +100,7 @@ class IconManipulator(CSSManipulator):
             target_color = self.context.icon_settings.color_map[color]
             new_svg = svg.replace(replacer, f'"{target_color.to_hex()}"')
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            with open(output_path, "w") as f:
+            with open(output_path, "w", newline="\n") as f:
                 f.write(new_svg)
 
             hash_result = hash_handler.build_file(self.context, output_relpath)
