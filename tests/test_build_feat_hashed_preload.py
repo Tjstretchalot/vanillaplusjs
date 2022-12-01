@@ -13,6 +13,14 @@ from vanillaplusjs.constants import PROCESSOR_VERSION
 BASIC = {
     "orig": {
         "src/public/assets/fonts/test.ttf": "we don't need a real font here for this test",
+        "src/public/css/main.css": """
+@font-face {
+    font-family: "Test";
+    src: url("/assets/fonts/test.ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+""",
         "src/public/index.html": """
 <!DOCTYPE html>
 <html>
@@ -28,6 +36,16 @@ BASIC = {
     },
     "conv": {
         "out/www/assets/fonts/test.ttf": "we don't need a real font here for this test",
+        "out/www/css/main.css": """
+@font-face {{
+    font-family: "Test";
+    src: url("/assets/fonts/test.ttf?v=QUVT2uNMmAwpHxaQ4w6wrDdwddIgvIWPbLF0X9wZKjs%3D&pv={PROCESSOR_VERSION}");
+    font-weight: normal;
+    font-style: normal;
+}}
+""".format(
+            PROCESSOR_VERSION=PROCESSOR_VERSION
+        ),
         "out/www/index.html": """<!DOCTYPE html><html><head><meta charset="utf-8">
     <title>Test</title>
     <link as="font" href="/assets/fonts/test.ttf?v=QUVT2uNMmAwpHxaQ4w6wrDdwddIgvIWPbLF0X9wZKjs%3D&amp;pv={PROCESSOR_VERSION}" rel="preload" type="font/ttf">

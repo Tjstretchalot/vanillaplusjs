@@ -8,6 +8,7 @@ from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.build.css.token import CSSToken, CSSTokenType
+import vanillaplusjs.build.handlers.hash as hash_handler
 from loguru import logger
 import re
 import os
@@ -101,7 +102,12 @@ class IconManipulator(CSSManipulator):
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w") as f:
                 f.write(new_svg)
+
+            hash_result = hash_handler.build_file(self.context, output_relpath)
             self.produced.add(output_relpath)
+            self.children.update(hash_result.children)
+            self.produced.update(hash_result.produced)
+            self.reused.update(hash_result.reused)
 
         resulting_tokens = []
         for size in args.output_sizes:
