@@ -139,7 +139,7 @@ class OutlineManipulator(HTMLManipulator):
             while possibly_empty_folder.count(os.path.sep) > 2:
                 try:
                     os.rmdir(os.path.join(self.context.folder, possibly_empty_folder))
-                except FileNotFoundError:
+                except (FileNotFoundError, PermissionError):
                     break  # Scanning can happen concurrently
                 except OSError as e:
                     if e.errno == errno.ENOTEMPTY:

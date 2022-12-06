@@ -171,6 +171,8 @@ async def check_external_files(context: BuildContext):
                 ),
             )
 
+    external_files_state_folder = os.path.dirname(context.external_files_state_file)
+    os.makedirs(external_files_state_folder, exist_ok=True)
     with open(context.external_files_state_file, "w") as f:
         json.dump(dataclasses.asdict(new_external_files_state), f)
 
