@@ -79,6 +79,7 @@ from typing import Set
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.html.manips.images.command import ImageCommand
+from vanillaplusjs.build.ioutil import makedirs_safely
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 import os
 import json
@@ -245,7 +246,7 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
             }
         }
 
-    os.makedirs(os.path.join(context.folder, os.path.dirname(out_path)), exist_ok=True)
+    makedirs_safely(os.path.join(context.folder, os.path.dirname(out_path)))
     with open(os.path.join(context.folder, out_path), "w", newline="\n") as f:
         f.write("export default ")
         json.dump(output_dictionary, f, sort_keys=True)

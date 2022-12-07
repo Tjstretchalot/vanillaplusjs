@@ -2,6 +2,7 @@ import decimal
 from typing import Optional, Sequence
 import argparse
 import os
+from vanillaplusjs.build.ioutil import makedirs_safely
 import vanillaplusjs.constants
 import json
 
@@ -161,9 +162,9 @@ def init(folder: str, host: Optional[str] = None) -> None:
                 cls=DecimalEncoder,
             )
 
-    os.makedirs(os.path.join(folder, "src", "public", "img"), exist_ok=True)
-    os.makedirs(os.path.join(folder, "src", "public", "js"), exist_ok=True)
-    os.makedirs(os.path.join(folder, "src", "partials"), exist_ok=True)
+    makedirs_safely(os.path.join(folder, "src", "public", "img"))
+    makedirs_safely(os.path.join(folder, "src", "public", "js"))
+    makedirs_safely(os.path.join(folder, "src", "partials"))
 
     if not os.path.exists(os.path.join(folder, "src", "public", "index.html")):
         with open(os.path.join(folder, "src", "public", "index.html"), "w") as f:

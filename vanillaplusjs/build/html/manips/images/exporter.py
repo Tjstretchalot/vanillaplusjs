@@ -10,6 +10,7 @@ from vanillaplusjs.build.html.manips.images.settings import (
     ImageExport,
     compare_in_format,
 )
+from vanillaplusjs.build.ioutil import makedirs_safely
 from .cover_fit import cover_fit
 import os
 import json
@@ -121,9 +122,8 @@ def export_command(
                     reused.append(out_file)
                 else:
                     produced.append(out_file)
-                    os.makedirs(
-                        os.path.dirname(os.path.join(context.folder, out_file)),
-                        exist_ok=True,
+                    makedirs_safely(
+                        os.path.dirname(os.path.join(context.folder, out_file))
                     )
 
                     if context.symlinks:
@@ -138,9 +138,7 @@ def export_command(
                         )
 
         if we_are_first:
-            os.makedirs(
-                os.path.dirname(os.path.join(context.folder, lock_file)), exist_ok=True
-            )
+            makedirs_safely(os.path.dirname(os.path.join(context.folder, lock_file)))
             Path(os.path.join(context.folder, lock_file)).touch()
             produced.append(lock_file)
         else:
@@ -283,9 +281,8 @@ def export_command(
             out_path_relative_to_root = os.path.join(
                 target_out_folder_relative_to_root, desired_filename
             )
-            os.makedirs(
-                os.path.join(context.folder, target_out_folder_relative_to_root),
-                exist_ok=True,
+            makedirs_safely(
+                os.path.join(context.folder, target_out_folder_relative_to_root)
             )
             if context.symlinks:
                 os.symlink(
@@ -365,7 +362,7 @@ def produce_image(
         image = image.resize((width, height), Image.Resampling.LANCZOS)
 
     logger.debug("Exporting to {}", dst_file)
-    os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+    makedirs_safely(os.path.dirname(dst_file))
     now = time.perf_counter()
     image.save(dst_file, format=format, **formatter_kwargs)
     time_taken = time.perf_counter() - now

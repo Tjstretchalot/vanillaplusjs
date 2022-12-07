@@ -8,6 +8,7 @@ from vanillaplusjs.build.handlers.handler import Handler
 import os
 import io
 from urllib.parse import urlencode
+from vanillaplusjs.build.ioutil import makedirs_safely
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.constants import PROCESSOR_VERSION
 
@@ -78,9 +79,8 @@ class OutlineManipulator(HTMLManipulator):
             if self._should_outline_script(node):
                 self.outlining = "script"
                 if self.script_outline_count == 0:
-                    os.makedirs(
-                        os.path.join(self.context.folder, self.script_src_folder),
-                        exist_ok=True,
+                    makedirs_safely(
+                        os.path.join(self.context.folder, self.script_src_folder)
                     )
                 self.script_outline_count += 1
                 self.outlining_to_path = os.path.join(
@@ -97,9 +97,8 @@ class OutlineManipulator(HTMLManipulator):
             if self._should_outline_style(node):
                 self.outlining = "style"
                 if self.style_outline_count == 0:
-                    os.makedirs(
-                        os.path.join(self.context.folder, self.style_src_folder),
-                        exist_ok=True,
+                    makedirs_safely(
+                        os.path.join(self.context.folder, self.style_src_folder)
                     )
                 self.style_outline_count += 1
                 self.outlining_to_path = os.path.join(

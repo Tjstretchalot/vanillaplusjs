@@ -6,6 +6,7 @@ from vanillaplusjs.build.exceptions import (
     CyclicDependencyException,
 )
 from vanillaplusjs.build.file_signature import FileSignature, get_file_signature
+from vanillaplusjs.build.ioutil import makedirs_safely
 from vanillaplusjs.build.scan_file import scan_file
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 from .graph import FileDependencyGraph
@@ -99,7 +100,7 @@ async def hot_incremental_rebuild(
                     os.path.join(context.folder, context.js_constants.relpath)
                 )
 
-            os.makedirs(context.out_folder, exist_ok=True)
+            makedirs_safely(context.out_folder)
             with open(
                 os.path.join(context.out_folder, "js_constants_mode.txt"), "w"
             ) as f:
@@ -434,7 +435,7 @@ async def hot_incremental_rebuild(
 
         logger.debug("Finished constructing new dependency and output graphs")
 
-        os.makedirs(context.out_folder, exist_ok=True)
+        makedirs_safely(context.out_folder)
 
         with open(context.dependency_graph_file, "w") as fp:
             new_dependency_graph.store(fp)

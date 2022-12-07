@@ -1,10 +1,15 @@
-"""Contains useful IO wrappers for tokenizers
+"""Contains useful IO wrappers for tokenizers and other standard operations
 """
 
 
 from typing import Optional
 import re
 from io import TextIOBase
+import time
+import os
+import random
+from loguru import logger
+import stat
 
 
 CARRIAGE_RETURN_LIKE = re.compile(r"\r\n|\r|\f")
@@ -183,3 +188,36 @@ class PreprocessedTextIO:
             if len(res) == n or len(res) == old_actual_peek_length:
                 return res
             attempted_peek_length = new_peek_length
+
+
+def makedirs_safely(path: str) -> None:
+    """Creates the directory at path, and all parent directories if necessary.
+    This is more reliable than the standard os.makedirs when the directory may
+    be created by multiple processes at once, which will cause random
+    PermissionError's.
+
+    This always acts as if (exist_ok=True)
+
+    This handles permission errors with a basic retry policy
+
+    Args:
+        path: The path to create
+    """
+
+    for i in range(5):
+        if i > 0:
+            time.sleep(0.1 * (2**i) + random.random() * 0.2)
+
+        path_stat = os.stat(path)
+        if path_stat is not None:
+            if stat.S_ISDIR(path_stat.st_mode):
+                return
+            raise FileExistsError(f"{path} exists and is not a directory")
+
+        try:
+            os.makedirs(path, exist_ok=True)
+            return
+        except PermissionError:
+            if i == 4:
+                raise
+            logger.warning(f"Permission error creating {path}; attempt {i+1}/5")

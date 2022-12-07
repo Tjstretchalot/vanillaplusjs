@@ -7,6 +7,7 @@ import os
 from typing import Optional
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file_result import BuildFileResult
+from vanillaplusjs.build.ioutil import makedirs_safely
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 import hashlib
 import base64
@@ -52,7 +53,7 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
 
     sha256_b64 = calculate_hash(src_path_rel_to_cwd)
 
-    os.makedirs(os.path.dirname(target_path_rel_to_cwd), exist_ok=True)
+    makedirs_safely(os.path.dirname(target_path_rel_to_cwd))
     with open(target_path_rel_to_cwd, "w") as f:
         f.write(sha256_b64)
 

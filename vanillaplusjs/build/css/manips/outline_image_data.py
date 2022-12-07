@@ -1,6 +1,7 @@
 from typing import Dict, List, Literal, Optional, Set
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file_result import BuildFileResult
+from vanillaplusjs.build.ioutil import makedirs_safely
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.build.css.manipulator import CSSManipulator
 from vanillaplusjs.build.css.token import CSSToken, CSSTokenType
@@ -135,7 +136,7 @@ class OutlineImageDataManipulator(CSSManipulator):
                 self.reused.add(out_relpath)
             else:
                 self.produced.add(out_relpath)
-                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+                makedirs_safely(os.path.dirname(out_path))
                 with open(out_path, "w", newline="\n") as f:
                     f.write(unquote(image_data))
 

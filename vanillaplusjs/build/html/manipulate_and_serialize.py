@@ -1,4 +1,6 @@
 from typing import List, Optional
+
+from vanillaplusjs.build.ioutil import makedirs_safely
 from .manipulator import HTMLManipulator
 from .builder import HTMLBuilder
 from .tokenizer import tokenize
@@ -27,7 +29,7 @@ def manipulate_and_serialize(
     if outfile is None:
         return
 
-    os.makedirs(os.path.dirname(outfile), exist_ok=True)
+    makedirs_safely(os.path.dirname(outfile))
 
     output_tokens = builder.consume_tokens()
     serializer = html5lib.serializer.HTMLSerializer(

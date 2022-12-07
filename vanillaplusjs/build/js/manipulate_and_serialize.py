@@ -1,4 +1,6 @@
 from typing import List, Optional
+
+from vanillaplusjs.build.ioutil import makedirs_safely
 from .manipulator import JSManipulator
 from .builder import JSBuilder
 from .tokenizer import tokenize
@@ -25,7 +27,7 @@ def manipulate_and_serialize(
 
     out_dir = os.path.dirname(outfile)
     if out_dir:
-        os.makedirs(out_dir, exist_ok=True)
+        makedirs_safely(out_dir)
 
     with open(infile, "r") as f_in:
         with open(outfile, "w", newline="\n") as f_out:

@@ -32,6 +32,8 @@ from vanillaplusjs.build.handlers.hash import calculate_hash
 from vanillaplusjs.build.html.manips.images.settings import ImageSettings
 from loguru import logger
 
+from vanillaplusjs.build.ioutil import makedirs_safely
+
 
 @dataclass(frozen=True)
 class ImageSource:
@@ -276,7 +278,7 @@ def get_target(
 
             if not os.path.exists(os.path.join(entry.path, "metadata.json")):
                 lock_path = reserve_target_lock_path(context, relpath)
-                os.makedirs(os.path.dirname(lock_path), exist_ok=True)
+                makedirs_safely(os.path.dirname(lock_path))
                 with fasteners.InterProcessLock(lock_path):
                     if os.path.exists(os.path.join(entry.path, "placeholder.json")):
                         with open(
@@ -341,8 +343,8 @@ def reserve_target(
     relpath_without_ext = os.path.splitext(relpath)[0]
     art_path = os.path.join(context.artifacts_folder, relpath_without_ext)
     lock_path = reserve_target_lock_path(context, relpath)
-    os.makedirs(os.path.dirname(lock_path), exist_ok=True)
-    os.makedirs(art_path, exist_ok=True)
+    makedirs_safely(os.path.dirname(lock_path))
+    makedirs_safely(art_path)
     with fasteners.InterProcessLock(lock_path):
         try:
             with open(os.path.join(art_path, "counter.txt"), "r") as f:
@@ -357,7 +359,7 @@ def reserve_target(
 
         entry_path = os.path.join(art_path, str(counter))
         placeholder_path = os.path.join(entry_path, "placeholder.json")
-        os.makedirs(entry_path, exist_ok=True)
+        makedirs_safely(entry_path)
         with open(placeholder_path, "w") as f:
             json.dump(dataclasses.asdict(target), f)
 

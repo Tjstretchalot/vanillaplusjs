@@ -8,6 +8,7 @@ from vanillaplusjs.build.build_context import (
     ExternalFilesState,
 )
 from vanillaplusjs.build.exceptions import IntegrityMismatchException
+from vanillaplusjs.build.ioutil import makedirs_safely
 from .graph import FileDependencyGraph
 from .file_signature import FileSignature, get_file_signature
 from .hot_incremental_rebuild import hot_incremental_rebuild
@@ -172,7 +173,7 @@ async def check_external_files(context: BuildContext):
             )
 
     external_files_state_folder = os.path.dirname(context.external_files_state_file)
-    os.makedirs(external_files_state_folder, exist_ok=True)
+    makedirs_safely(external_files_state_folder)
     with open(context.external_files_state_file, "w") as f:
         json.dump(dataclasses.asdict(new_external_files_state), f)
 
@@ -229,7 +230,7 @@ def handle_external_file(
         "Downloading external file {} from {}", external_file.relpath, external_file.url
     )
 
-    os.makedirs(context.out_folder, exist_ok=True)
+    makedirs_safely(context.out_folder)
     temp_path = os.path.join(context.out_folder, f"{secrets.token_urlsafe(8)}.tmp")
     try:
         response = requests.get(external_file.url, stream=True)
@@ -243,9 +244,8 @@ def handle_external_file(
             os.unlink(os.path.join(context.folder, external_file.relpath))
         except FileNotFoundError:
             pass
-        os.makedirs(
-            os.path.dirname(os.path.join(context.folder, external_file.relpath)),
-            exist_ok=True,
+        makedirs_safely(
+            os.path.dirname(os.path.join(context.folder, external_file.relpath))
         )
         os.rename(temp_path, os.path.join(context.folder, external_file.relpath))
         logger.info("Downloaded external file {}", external_file.relpath)

@@ -6,6 +6,7 @@ from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.css.serializer import serialize_string_auto_quote
 import vanillaplusjs.build.handlers.copy
 import vanillaplusjs.build.handlers.hash
+from vanillaplusjs.build.ioutil import makedirs_safely
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 import os
 
@@ -42,7 +43,7 @@ def build_file(context: BuildContext, relpath: str) -> BuildFileResult:
         else:
             constants.update(context.js_constants.prod)
 
-        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+        makedirs_safely(os.path.dirname(target_path))
         with open(target_path, "w", newline="\n") as f:
             if not constants:
                 f.write("\n")

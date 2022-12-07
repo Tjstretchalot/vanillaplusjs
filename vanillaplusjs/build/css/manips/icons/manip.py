@@ -6,6 +6,7 @@ from vanillaplusjs.build.css.manipulator import CSSManipulator
 from typing import List, Literal, Optional, Set
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file_result import BuildFileResult
+from vanillaplusjs.build.ioutil import makedirs_safely
 from vanillaplusjs.build.scan_file_result import ScanFileResult
 from vanillaplusjs.build.css.token import CSSToken, CSSTokenType
 import vanillaplusjs.build.handlers.hash as hash_handler
@@ -99,7 +100,7 @@ class IconManipulator(CSSManipulator):
 
             target_color = self.context.icon_settings.color_map[color]
             new_svg = svg.replace(replacer, f'"{target_color.to_hex()}"')
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            makedirs_safely(os.path.dirname(output_path))
             with open(output_path, "w", newline="\n") as f:
                 f.write(new_svg)
 
