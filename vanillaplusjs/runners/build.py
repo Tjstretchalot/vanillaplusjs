@@ -141,6 +141,14 @@ def build(
     # modified. Note that a single output file may have multiple input
     # files: for example, an image which is used in multiple places.
 
+    old_placeholders_graph = FileDependencyGraph()
+    # In this graph, all the files in the graph are input files, and input
+    # file a is a parent of input file b if file b is generated from file a.
+    # This is used when we are generating JS files in the out folder, and
+    # we want a placeholder file in the src folder containing type hints for
+    # the generated file. This augments the dependency graph: if a depends on b
+    # which is produced by c, then a depends on c.
+
     if os.path.exists(context.dependency_graph_file):
         logger.debug("Loading old dependency graph")
         with open(context.dependency_graph_file) as f:
@@ -153,11 +161,19 @@ def build(
             old_output_graph = FileDependencyGraph.load(f)
         logger.debug("Loaded old outputs graph")
 
+    if os.path.exists(context.placeholder_graph_file):
+        logger.debug("Loading old placeholders graph")
+        with open(context.placeholder_graph_file) as f:
+            old_placeholders_graph = FileDependencyGraph.load(f)
+        logger.debug("Loaded old placeholders graph")
+
     loop = asyncio.new_event_loop()
     try:
         asyncio.set_event_loop(loop)
         loop.run_until_complete(
-            cold_incremental_rebuild(context, old_dependency_graph, old_output_graph)
+            cold_incremental_rebuild(
+                context, old_dependency_graph, old_output_graph, old_placeholders_graph
+            )
         )
 
         # Wait for the `ensure_future`s to finish cleanly

@@ -21,6 +21,7 @@ async def hot_incremental_rebuild(
     context: BuildContext,
     old_dependency_graph: FileDependencyGraph,
     old_output_graph: FileDependencyGraph,
+    old_placeholders_graph: FileDependencyGraph,
     changed_files: Dict[str, FileSignature],
     added_files: Dict[str, FileSignature],
     deleted_files: List[str],
@@ -48,6 +49,14 @@ async def hot_incremental_rebuild(
             produced). If we rebuild a file and its outputs change, any outputs
             that it used to have which are no longer outputs of any file will be
             deleted.
+        old_placeholders_graph (FileDependencyGraph):
+            If specified, provides the placeholders of the old build. This is
+            used for augmenting the dependency graph: if a depends on b which
+            is produced by c, then a depends on c. Placeholders cannot be
+            removed once they are added for a file, unless that file is removed,
+            in which case we remove the placeholder dependency, effectively
+            "upgrading" it, which is not usually desirable but the only logical
+            thing to do.
         changed_files (dict[str, FileSignature]):
             The list of files that are in the old dependency graph, but whose
             contents may have changed. These files will be rebuilt, and if their
@@ -118,6 +127,7 @@ async def hot_incremental_rebuild(
     with concurrent.futures.ProcessPoolExecutor() as executor:
         files_that_need_scanning = list(changed_files.keys()) + list(added_files.keys())
         updated_children: Dict[str, ScanFileResult] = dict()
+        new_placeholders: Dict[str, str] = dict()  # placeholder -> original file
 
         while files_that_need_scanning:
             additional_children: Dict[str, ScanFileResult] = await scan_files(
@@ -147,6 +157,7 @@ async def hot_incremental_rebuild(
                         ) as f:
                             f.write(placeholder_contents)
                         files_that_need_scanning.append(placeholder_relpath)
+                        new_placeholders[placeholder_relpath] = scanned_file_relpath
                         added_files[placeholder_relpath] = get_file_signature(
                             os.path.join(context.folder, placeholder_relpath)
                         )
@@ -169,6 +180,12 @@ async def hot_incremental_rebuild(
 
             if file in old_dependency_graph:
                 for par in old_dependency_graph.get_parents(file):
+                    if par not in files_to_rebuild:
+                        files_to_rebuild.add(par)
+                        stack.append(par)
+
+            if file in old_placeholders_graph:
+                for par in old_placeholders_graph.get_parents(file):
                     if par not in files_to_rebuild:
                         files_to_rebuild.add(par)
                         stack.append(par)
@@ -216,8 +233,20 @@ async def hot_incremental_rebuild(
         def get_file_depends_on(file: str) -> List[str]:
             if file in updated_children:
                 updated_result = updated_children[file]
+                if file in new_placeholders:
+                    return updated_result.dependencies + [new_placeholders[file]]
+                if file in old_placeholders_graph:
+                    return (
+                        updated_result.dependencies
+                        + old_placeholders_graph.get_parents(file)
+                    )
                 return updated_result.dependencies
-            return old_dependency_graph.get_children(file)
+
+            if file not in old_placeholders_graph:
+                return old_dependency_graph.get_children(file)
+            return old_dependency_graph.get_children(
+                file
+            ) + old_placeholders_graph.get_parents(file)
 
         def get_file_creates(file: str) -> List[str]:
             if file in updated_children:
@@ -349,6 +378,7 @@ async def hot_incremental_rebuild(
 
         new_dependency_graph = FileDependencyGraph()
         new_output_graph = FileDependencyGraph()
+        new_placeholder_graph = FileDependencyGraph()
 
         all_input_files = list(
             f
@@ -358,6 +388,7 @@ async def hot_incremental_rebuild(
             if f not in deleted_files
         )
 
+        possible_empty_placeholder_nodes = set()
         for file in all_input_files:
             new_signature: FileSignature = None
             if file in changed_files:
@@ -376,6 +407,10 @@ async def hot_incremental_rebuild(
             new_output_graph.add_file(
                 file, new_signature.filesize, new_signature.mtime, new_signature.inode
             )
+            new_placeholder_graph.add_file(
+                file, new_signature.filesize, new_signature.mtime, new_signature.inode
+            )
+            possible_empty_placeholder_nodes.add(file)
 
         possibly_empty_output_nodes = set()
         for file, node in old_output_graph.nodes.items():
@@ -396,6 +431,35 @@ async def hot_incremental_rebuild(
                         continue
 
                 new_output_graph.add_file(file, node.filesize, node.mtime, node.inode)
+
+        for file, node in old_placeholders_graph.nodes.items():
+            if file not in new_placeholder_graph:
+                # either:
+                #  - file used to generate a placeholder, but now that file
+                #    has been deleted, the placeholders are now full-blown
+                #    files
+                #  - file was generated by generator, file was deleted, and
+                #    the generator did not reproduce it
+                continue
+
+            old_generators_of_file = old_placeholders_graph.get_parents(file)
+
+            for generator in old_generators_of_file:
+                if generator in new_placeholder_graph:
+                    # generator still exists, so this file is still a placeholder
+                    new_placeholder_graph.set_children(
+                        generator,
+                        new_placeholder_graph.get_children(generator) + [file],
+                    )
+                    possible_empty_placeholder_nodes.remove(generator)
+                    possible_empty_placeholder_nodes.remove(file)
+                    break
+
+        for placeholder, generator in new_placeholders.items():
+            gen_children = new_placeholder_graph.get_children(generator)
+            if placeholder not in gen_children:
+                gen_children.append(placeholder)
+            new_placeholder_graph.set_children(generator, gen_children)
 
         for file in all_input_files:
             new_dependencies = (
@@ -433,7 +497,15 @@ async def hot_incremental_rebuild(
             if not new_output_graph.get_parents(node):
                 new_output_graph.remove_file(node)
 
-        logger.debug("Finished constructing new dependency and output graphs")
+        for node in possible_empty_placeholder_nodes:
+            if not new_placeholder_graph.get_parents(
+                node
+            ) and not new_placeholder_graph.get_children(node):
+                new_placeholder_graph.remove_file(node)
+
+        logger.debug(
+            "Finished constructing new dependency, output, and placeholder graphs"
+        )
 
         makedirs_safely(context.out_folder)
 
@@ -443,7 +515,10 @@ async def hot_incremental_rebuild(
         with open(context.output_graph_file, "w") as fp:
             new_output_graph.store(fp)
 
-        logger.debug("Finished storing dependency and output graphs")
+        with open(context.placeholder_graph_file, "w") as fp:
+            new_placeholder_graph.store(fp)
+
+        logger.debug("Finished storing dependency, output, and placeholder graphs")
         logger.info('"{}" rebuilt successfully', context.folder)
 
 

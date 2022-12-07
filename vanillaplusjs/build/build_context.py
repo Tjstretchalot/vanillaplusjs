@@ -194,6 +194,18 @@ class BuildContext:
         return os.path.join(self.out_folder, "output_graph.json")
 
     @property
+    def placeholder_graph_file(self) -> str:
+        """Returns the path to the placeholder graph file.
+        In this graph, all the files in the graph are input files, and input
+        file a is a parent of input file b if file b is generated from file a.
+        This is used when we are generating JS files in the out folder, and
+        we want a placeholder file in the src folder containing type hints for
+        the generated file. This augments the dependency graph: if a depends on b
+        which is produced by c, then a depends on c.
+        """
+        return os.path.join(self.out_folder, "placeholder_graph.json")
+
+    @property
     def external_files_state_file(self) -> str:
         """Returns the path to the external files state JSON file"""
         return os.path.join(self.out_folder, "external_files_state.json")

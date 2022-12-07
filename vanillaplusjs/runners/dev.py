@@ -230,6 +230,7 @@ class DevEventHandler(FileSystemEventHandler):
 
         old_dependency_graph = FileDependencyGraph()
         old_output_graph = FileDependencyGraph()
+        old_placeholder_graph = FileDependencyGraph()
 
         if os.path.exists(context.dependency_graph_file):
             with open(context.dependency_graph_file) as f:
@@ -238,6 +239,10 @@ class DevEventHandler(FileSystemEventHandler):
         if os.path.exists(context.output_graph_file):
             with open(context.output_graph_file) as f:
                 old_output_graph = FileDependencyGraph.load(f)
+
+        if os.path.exists(context.placeholder_graph_file):
+            with open(context.placeholder_graph_file) as f:
+                old_placeholder_graph = FileDependencyGraph.load(f)
 
         changed_files = dict(
             (os.path.relpath(file, self.folder), get_file_signature(file))
@@ -271,6 +276,7 @@ class DevEventHandler(FileSystemEventHandler):
                     context,
                     old_dependency_graph,
                     old_output_graph,
+                    old_placeholder_graph,
                     changed_files,
                     added_files,
                     deleted_files,

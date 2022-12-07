@@ -27,6 +27,7 @@ async def cold_incremental_rebuild(
     context: BuildContext,
     old_dependency_graph: FileDependencyGraph,
     old_output_graph: FileDependencyGraph,
+    old_placeholders_graph: FileDependencyGraph,
 ) -> None:
     """Builds the given folder, skipping the standard sanity checks to
     see if the folder has the correct structure.
@@ -47,6 +48,14 @@ async def cold_incremental_rebuild(
             produced). If we rebuild a file and its outputs change, any outputs
             that it used to have which are no longer outputs of any file will be
             deleted.
+        old_placeholders_graph (FileDependencyGraph):
+            If specified, provides the placeholders of the old build. This is
+            used for augmenting the dependency graph: if a depends on b which
+            is produced by c, then a depends on c. Placeholders cannot be
+            removed once they are added for a file, unless that file is removed,
+            in which case we remove the placeholder dependency, effectively
+            "upgrading" it, which is not usually desirable but the only logical
+            thing to do.
     """
     logger.debug(
         'Starting cold start incremental rebuild on "{}"',
@@ -96,6 +105,7 @@ async def cold_incremental_rebuild(
         context,
         old_dependency_graph,
         old_output_graph,
+        old_placeholders_graph,
         relpaths_changed,
         relpaths_added,
         relpaths_deleted,
