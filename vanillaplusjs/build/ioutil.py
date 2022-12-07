@@ -208,11 +208,16 @@ def makedirs_safely(path: str) -> None:
         if i > 0:
             time.sleep(0.1 * (2**i) + random.random() * 0.2)
 
-        path_stat = os.stat(path)
-        if path_stat is not None:
-            if stat.S_ISDIR(path_stat.st_mode):
-                return
-            raise FileExistsError(f"{path} exists and is not a directory")
+        try:
+            path_stat = os.stat(path)
+            if path_stat is not None:
+                if stat.S_ISDIR(path_stat.st_mode):
+                    return
+                raise FileExistsError(f"{path} exists and is not a directory")
+        except FileNotFoundError:
+            pass
+        except PermissionError:
+            logger.warning(f"Permission error checking {path}; attempt {i+1}/5")
 
         try:
             os.makedirs(path, exist_ok=True)
