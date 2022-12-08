@@ -45,13 +45,13 @@ class LinkRelStylesheetHash(HTMLManipulator):
             return False
 
         dep_with_os_sep = dep.replace("/", os.path.sep)
-        rel_to_public = os.path.join("src", "public", dep_with_os_sep)
+        rel_to_out = os.path.join("out", "www", dep_with_os_sep)
 
         if self.mode == "scan":
-            self.dependencies.add(rel_to_public)
+            self.dependencies.add(rel_to_out)
             return False
 
-        self.children.add(rel_to_public)
+        self.children.add(rel_to_out)
         return True
 
     def continue_mark(self, node: tkn.HTMLToken) -> Optional[List[tkn.HTMLToken]]:

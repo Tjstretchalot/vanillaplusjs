@@ -14,10 +14,13 @@ from vanillaplusjs.constants import PROCESSOR_VERSION
 @dataclass
 class VersionSuffix:
     path_from_public: str
-    """The path to the file, relative to the public folder"""
+    """The path to the source file, relative to the public folder"""
 
     path_from_root: str
-    """The path to the file, relative to the project root"""
+    """The path to the source file, relative to the project root"""
+
+    path_of_hash_from_root: str
+    """The path to the produced hash file we need, relative to the project root"""
 
 
 class VersionURLsManipulator(CSSManipulator):
@@ -63,7 +66,7 @@ class VersionURLsManipulator(CSSManipulator):
             new_suffix = self._decide_new_version_suffix(node["value"])
             if new_suffix is not None:
                 if self.mode == "scan":
-                    self.dependencies.add(new_suffix.path_from_root)
+                    self.dependencies.add(new_suffix.path_of_dependency)
                     return False
                 return True
             return False
@@ -90,6 +93,9 @@ class VersionURLsManipulator(CSSManipulator):
         return VersionSuffix(
             path_from_public=path_relative_to_public,
             path_from_root=path_relative_to_root,
+            path_of_hash_from_root=os.path.join(
+                "out", "www", path_relative_to_public + ".hash"
+            ),
         )
 
     def continue_mark(self, node: CSSToken) -> Optional[List[CSSToken]]:
@@ -97,10 +103,9 @@ class VersionURLsManipulator(CSSManipulator):
         if new_suffix is None:
             return [node]
 
+        self.children.add(new_suffix.path_of_hash_from_root)
         with open(
-            os.path.join(
-                self.context.out_folder, "www", new_suffix.path_from_public + ".hash"
-            )
+            os.path.join(self.context.folder, new_suffix.path_of_hash_from_root)
         ) as f:
             hash_value = f.read()
 

@@ -133,6 +133,7 @@ async def hot_incremental_rebuild(
             additional_children: Dict[str, ScanFileResult] = await scan_files(
                 context, executor, files_that_need_scanning
             )
+
             updated_children.update(additional_children)
 
             files_that_need_scanning = []
@@ -161,6 +162,48 @@ async def hot_incremental_rebuild(
                         added_files[placeholder_relpath] = get_file_signature(
                             os.path.join(context.folder, placeholder_relpath)
                         )
+
+        # When the scan file result marks an output file as a dependency,
+        # we must reinterpret that as a dependency on a file which intends
+        # to produce that output file.
+
+        out_dependencies_mapping: Dict[str, str] = dict()
+        for scanned_file_relpath, scan_result in updated_children.items():
+            for out_relpath in scan_result.produces:
+                out_dependencies_mapping[out_relpath] = scanned_file_relpath
+
+        for scanned_file_relpath, scan_result in updated_children.items():
+            new_dependencies = []
+
+            for dep_relpath in scan_result.dependencies:
+                if not any(
+                    dep_relpath.startswith(prefix) for prefix in ("out", "artifacts")
+                ):
+                    new_dependencies.append(dep_relpath)
+                    continue
+
+                if dep_relpath in out_dependencies_mapping:
+                    new_dependencies.append(dep_relpath)
+                    continue
+
+                if dep_relpath not in out_dependencies_mapping:
+                    if dep_relpath not in old_output_graph:
+                        raise ValueError(
+                            f"{scanned_file_relpath=} depends on {dep_relpath=}, but nothing produces that file!"
+                        )
+                    produced_by = old_output_graph.get_parents(dep_relpath)
+                    # take the first one which hasn't been deleted
+                    for p in produced_by:
+                        if p not in deleted_files:
+                            out_dependencies_mapping[dep_relpath] = p
+                            new_dependencies.append(p)
+                            break
+                    else:
+                        raise ValueError(
+                            f"{scanned_file_relpath=} depends on {dep_relpath=}, but all the files which produce that file have been deleted!"
+                        )
+
+            scan_result.dependencies = new_dependencies
 
         files_to_rebuild: Set[str] = set()
         dirtied_outputs: Set[str] = set()
@@ -323,6 +366,25 @@ async def hot_incremental_rebuild(
                 if future.done():
                     logger.debug("Finished rebuilding {}", pending_file)
                     rebuild_result: BuildFileResult = future.result()
+
+                    reinterpreted_children: List[str] = []
+                    for child in rebuild_result.children:
+                        if child in out_dependencies_mapping:
+                            reinterpreted_children.append(
+                                out_dependencies_mapping[child]
+                            )
+                        elif child.startswith("out") or child.startswith("artifacts"):
+                            logger.warning(
+                                "{} lists {} as a child, which is in the out folder, "
+                                "but it is not in the out dependencies mapping! "
+                                "This is likely a bug",
+                                pending_file,
+                                child,
+                            )
+                        else:
+                            reinterpreted_children.append(child)
+                    rebuild_result.children = reinterpreted_children
+
                     updated_results[pending_file] = rebuild_result
                     del pending_results[pending_file]
                     for file in rebuild_result.produced:
