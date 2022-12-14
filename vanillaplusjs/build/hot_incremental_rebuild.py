@@ -169,10 +169,6 @@ async def hot_incremental_rebuild(
 
         out_dependencies_mapping: Dict[str, str] = dict()
         for scanned_file_relpath, scan_result in updated_children.items():
-            logger.debug(
-                f"{scanned_file_relpath} depends on {scan_result.dependencies}"
-            )
-            logger.debug(f"{scanned_file_relpath} produces {scan_result.produces}")
             for out_relpath in scan_result.produces:
                 out_dependencies_mapping[out_relpath] = scanned_file_relpath
 
@@ -208,9 +204,6 @@ async def hot_incremental_rebuild(
                         )
 
             new_dependencies.discard(scanned_file_relpath)
-            logger.debug(
-                f"after transformations, {scanned_file_relpath} depends on {new_dependencies}"
-            )
             scan_result.dependencies = list(new_dependencies)
 
         files_to_rebuild: Set[str] = set()
@@ -312,10 +305,6 @@ async def hot_incremental_rebuild(
             for file in files_to_rebuild:
                 file_depends_on: List[str] = get_file_depends_on(file)
                 file_creates: List[str] = get_file_creates(file)
-
-                logger.debug(
-                    f"considering starting {file} {file_depends_on=} {file_creates=}"
-                )
 
                 all_dependencies_built = True
                 for child in file_depends_on:
