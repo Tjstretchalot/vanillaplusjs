@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Set
+from typing import Dict, List, Literal, Set, Tuple
 from vanillaplusjs.build.build_context import BuildContext
 from vanillaplusjs.build.build_file_result import BuildFileResult
 from vanillaplusjs.build.build_file import build_file
@@ -169,21 +169,25 @@ async def hot_incremental_rebuild(
 
         out_dependencies_mapping: Dict[str, str] = dict()
         for scanned_file_relpath, scan_result in updated_children.items():
+            logger.debug(
+                f"{scanned_file_relpath} depends on {scan_result.dependencies}"
+            )
+            logger.debug(f"{scanned_file_relpath} produces {scan_result.produces}")
             for out_relpath in scan_result.produces:
                 out_dependencies_mapping[out_relpath] = scanned_file_relpath
 
         for scanned_file_relpath, scan_result in updated_children.items():
-            new_dependencies = []
+            new_dependencies = set()
 
             for dep_relpath in scan_result.dependencies:
                 if not any(
                     dep_relpath.startswith(prefix) for prefix in ("out", "artifacts")
                 ):
-                    new_dependencies.append(dep_relpath)
+                    new_dependencies.add(dep_relpath)
                     continue
 
                 if dep_relpath in out_dependencies_mapping:
-                    new_dependencies.append(dep_relpath)
+                    new_dependencies.add(out_dependencies_mapping[dep_relpath])
                     continue
 
                 if dep_relpath not in out_dependencies_mapping:
@@ -196,14 +200,18 @@ async def hot_incremental_rebuild(
                     for p in produced_by:
                         if p not in deleted_files:
                             out_dependencies_mapping[dep_relpath] = p
-                            new_dependencies.append(p)
+                            new_dependencies.add(p)
                             break
                     else:
                         raise ValueError(
                             f"{scanned_file_relpath=} depends on {dep_relpath=}, but all the files which produce that file have been deleted!"
                         )
 
-            scan_result.dependencies = new_dependencies
+            new_dependencies.discard(scanned_file_relpath)
+            logger.debug(
+                f"after transformations, {scanned_file_relpath} depends on {new_dependencies}"
+            )
+            scan_result.dependencies = list(new_dependencies)
 
         files_to_rebuild: Set[str] = set()
         dirtied_outputs: Set[str] = set()
@@ -305,6 +313,10 @@ async def hot_incremental_rebuild(
                 file_depends_on: List[str] = get_file_depends_on(file)
                 file_creates: List[str] = get_file_creates(file)
 
+                logger.debug(
+                    f"considering starting {file} {file_depends_on=} {file_creates=}"
+                )
+
                 all_dependencies_built = True
                 for child in file_depends_on:
                     if (
@@ -370,17 +382,43 @@ async def hot_incremental_rebuild(
                     reinterpreted_children: List[str] = []
                     for child in rebuild_result.children:
                         if child in out_dependencies_mapping:
-                            reinterpreted_children.append(
-                                out_dependencies_mapping[child]
-                            )
+                            mapped_child = out_dependencies_mapping[child]
+                            if mapped_child != pending_file:
+                                reinterpreted_children.append(mapped_child)
                         elif child.startswith("out") or child.startswith("artifacts"):
-                            logger.warning(
-                                "{} lists {} as a child, which is in the out folder, "
-                                "but it is not in the out dependencies mapping! "
-                                "This is likely a bug",
-                                pending_file,
-                                child,
-                            )
+                            found = False
+                            inner_seen = set()
+                            if pending_file not in updated_children:
+                                # the output probably came from one of its dependencies, lets search
+                                # for it
+                                inner_stack: List[str] = [pending_file]
+                                while inner_stack:
+                                    inner_file = inner_stack.pop()
+                                    for produced in old_output_graph.get_children(
+                                        inner_file
+                                    ):
+                                        if produced == child:
+                                            out_dependencies_mapping[child] = inner_file
+                                            if inner_file != pending_file:
+                                                reinterpreted_children.append(
+                                                    inner_file
+                                                )
+                                            found = True
+                                            break
+                                    if found:
+                                        break
+                                    for (
+                                        inner_child
+                                    ) in old_dependency_graph.get_children(inner_file):
+                                        if inner_child not in inner_seen:
+                                            inner_stack.append(inner_child)
+                                            inner_seen.add(inner_child)
+
+                            if not found:
+                                raise ValueError(
+                                    f"{pending_file} lists {child} as a child, which is in the out folder, "
+                                    f"but we cannot find who produced it; checked {inner_seen}"
+                                )
                         else:
                             reinterpreted_children.append(child)
                     rebuild_result.children = reinterpreted_children

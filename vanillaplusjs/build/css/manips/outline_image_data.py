@@ -126,8 +126,8 @@ class OutlineImageDataManipulator(CSSManipulator):
             if need_to_create:
                 self.produces.add(out_relpath)
                 hash_scan_result = hash_handler.scan_file(self.context, out_relpath)
-                self.dependencies.union(hash_scan_result.dependencies)
-                self.produces.union(hash_scan_result.produces)
+                self.dependencies.update(hash_scan_result.dependencies)
+                self.produces.update(hash_scan_result.produces)
             return result
 
         out_path = os.path.join(self.context.folder, out_relpath)
@@ -141,9 +141,9 @@ class OutlineImageDataManipulator(CSSManipulator):
                     f.write(unquote(image_data))
 
             hash_build_result = hash_handler.build_file(self.context, out_relpath)
-            self.children.union(hash_build_result.children)
-            self.produced.union(hash_build_result.produced)
-            self.reused.union(hash_build_result.reused)
+            self.children.update(hash_build_result.children)
+            self.produced.update(hash_build_result.produced)
+            self.reused.update(hash_build_result.reused)
 
         with open(out_path + ".hash") as f:
             hash_value = f.read()

@@ -563,6 +563,15 @@ class IconManipulator(CSSManipulator):
         for color in args.output_colors:
             self.produces.add(os.path.join(args.output_icon_folder, color + ".svg"))
 
+            # these are oging to come from the version_urls manipulator, but if we don't add them
+            # we have to do a much more expensive scan by actually producing the css tokens
+            self.produces.add(
+                os.path.join(args.output_icon_folder, color + ".svg.hash")
+            )
+            self.dependencies.add(
+                os.path.join(args.output_icon_folder, color + ".svg.hash")
+            )
+
     def scan_result(self) -> ScanFileResult:
         """The scan result for this manipulator"""
         return ScanFileResult(

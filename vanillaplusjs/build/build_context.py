@@ -175,9 +175,15 @@ class BuildContext:
     def dependency_graph_file(self) -> str:
         """Returns the path to the dependency graph file.
         In this graph, all the files in the graph are input files, and input
-        file a is a parent of input file b if the outputs of a depend on b. All
+        file a is a parent of input file b if the outputs of b depend on a. All
         files are specified relative to the root folder with no leading slash;
         e.g., "src/public/index.html".
+
+        The following are identical for this graph:
+          - a is a parent of b
+          - b depends on a
+          - b is a child of a
+          - a is depended on by b
         """
         return os.path.join(self.out_folder, "dependency_graph.json")
 
