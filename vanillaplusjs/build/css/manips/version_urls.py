@@ -55,7 +55,7 @@ class VersionURLsManipulator(CSSManipulator):
                 new_suffix = self._decide_new_version_suffix(node["value"])
                 if new_suffix is not None:
                     if self.mode == "scan":
-                        self.dependencies.add(new_suffix.path_from_root)
+                        self.dependencies.add(new_suffix.path_of_hash_from_root)
                         return False
                     return True
 
@@ -66,7 +66,7 @@ class VersionURLsManipulator(CSSManipulator):
             new_suffix = self._decide_new_version_suffix(node["value"])
             if new_suffix is not None:
                 if self.mode == "scan":
-                    self.dependencies.add(new_suffix.path_of_dependency)
+                    self.dependencies.add(new_suffix.path_of_hash_from_root)
                     return False
                 return True
             return False
